@@ -2,7 +2,7 @@
 
 ## What Is This? 🤔
 
-This server is a middleware that enables large language models (like Claude and VS Code) to interact directly with PlayFab services. Acting as a secure and efficient translator, it connects your AI assistant with various PlayFab functionalities, such as item search, segment inquiries, and player profile lookups.
+This server is a middleware that enables large language models (like Claude and VS Code) to interact directly with PlayFab services. Acting as a secure and efficient translator, it connects your AI assistant with various PlayFab functionalities, such as item search, segment inquiries, player profile lookups, inventory management, and PlayFab ID conversion.
 
 ### Quick Example
 
@@ -26,6 +26,9 @@ Follow these steps to get started:
 - Search for items using PlayFab's search_items API.
 - Retrieve comprehensive segment information.
 - Query player profiles within specified segments.
+- Retrieve current inventory items with the get_inventory_items API.
+- Fetch inventory collection IDs using the get_inventory_collection_ids API.
+- Convert a PlayFab ID to a Title Player Account ID via the get_title_player_account_id_from_playfab_id API.
 
 ## Quick Start 🚀
 
