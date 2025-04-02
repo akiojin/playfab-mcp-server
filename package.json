@@ -31,5 +31,6 @@
     "dotenv": "^10.0.0",
     "playfab-sdk": "^2.171.250328"
   },
-  "type": "module"
+  "type": "module",
+  "private": false
 }
