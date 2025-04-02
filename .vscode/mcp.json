@@ -1,0 +1,14 @@
+{
+  "servers": {
+    "PlayFab": {
+      "command": "node",
+      "args": [
+        "E:/playfab-mcp-server/dist/index.js"
+      ],
+      "env": {
+        "PLAYFAB_TITLE_ID": "<your-title-id>",
+        "PLAYFAB_DEV_SECRET_KEY": "<your-dev-secret-key>"
+      }
+    }
+  }
+}
