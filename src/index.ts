@@ -13,7 +13,7 @@ const PlayFab = pf.PlayFab as PlayFabModule.IPlayFab
 const PlayFabAdminAPI = pf.PlayFabAdmin as PlayFabAdminModule.IPlayFabAdmin
 const PlayFabAuthenticationAPI = pf.PlayFabAuthentication as PlayFabAuthenticationModule.IPlayFabAuthentication
 const PlayFabEconomyAPI = pf.PlayFabEconomy as PlayFabEconomyModule.IPlayFabEconomy
-const PlayFabServerAPI = pf.PlayFabServer as PlayFabServerModule.IPlayFabServer
+const PlayFabProfileAPI = pf.PlayFabProfiles as PlayFabProfilesModule.IPlayFabProfiles
 
 dotenv.config()
 
@@ -99,6 +99,80 @@ const GET_PLAYERS_IN_SEGMENTS_TOOL: Tool = {
   },
 }
 
+const GET_INVENTORY_ITEMS_TOOL: Tool = {
+  name: "get_inventory_items",
+  description: "Get current inventory items.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      count: {
+        type: "number",
+        description: "Number of items to retrieve. This value is optional. Maximum page size is 50. The default value is 10"
+      },
+      collectionId: {
+        type: "string",
+        description: "The id of the entity's collection to perform this action on. (Default=\"default\")"
+      },
+      continuationToken: {
+        type: "string",
+        description: "An opaque token used to retrieve the next page of items in the inventory, if any are available. Should be null on initial request."
+      },
+      titlePlayerAccountId: {
+        type: "string",
+        description: "Title Player Account ID"
+      }
+    },
+    required: [
+      "count",
+      "titlePlayerAccountId",
+    ],
+  },
+}
+
+const GET_INVENTORY_COLLECTION_IDS_TOOL: Tool = {
+  name: "get_inventory_collection_ids",
+  description:
+    "Get Inventory Collection Ids. Up to 50 Ids can be returned at once (or 250 with response compression enabled). " +
+    "You can use continuation tokens to paginate through results that return greater than the limit. " +
+    "It can take a few seconds for new collection Ids to show up.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      count: {
+        type: "number",
+        description: "Number of items to retrieve. This value is optional. Maximum page size is 50. The default value is 10"
+      },
+      continuationToken: {
+        type: "string",
+        description: "An opaque token used to retrieve the next page of items in the inventory, if any are available. Should be null on initial request."
+      },
+      titlePlayerAccountId: {
+        type: "string",
+        description: "Title Player Account ID"
+      }
+    },
+    required: [
+      "count",
+      "titlePlayerAccountId",
+    ],
+  },
+}
+
+const GET_TITLE_PLAYER_ACCOUNT_ID_FROM_PLAYFAB_ID_TOOL: Tool = {
+  name: "get_title_player_account_id_from_playfab_id",
+  description: "Get the title player account ID from the PlayFab ID",
+  inputSchema: {
+    type: "object",
+    properties: {
+      playFabId: {
+        type: "string",
+        description: "PlayFab ID"
+      }
+    },
+    required: [ "playFabId" ],
+  },
+}
+
 async function SearchItems(params: any) {
   return new Promise((resolve, reject) => {
     PlayFabEconomyAPI.SearchItems({
@@ -158,6 +232,75 @@ async function GetPlayersInSegments(params: any) {
   })
 }
 
+async function GetInventoryItems(params: any) {
+  return new Promise((resolve, reject) => {
+    PlayFabEconomyAPI.GetInventoryItems({
+      Count: params.count,
+      CollectionId: params.collectionId,
+      ContinuationToken: params.continuationToken,
+      Entity: {
+        Id: params.titlePlayerAccountId,
+        Type: "title_player_account"
+      },
+    }, (error, result) => {
+      if (error) {
+        reject(error)
+        return
+      }
+
+      resolve({
+        success: true,
+        inventory: result.data.Items,
+        continuationToken: result.data.ContinuationToken,
+      })
+    })
+  })
+}
+
+async function GetInventoryCollectionIds(params: any) {
+  return new Promise((resolve, reject) => {
+    PlayFabEconomyAPI.GetInventoryCollectionIds({
+      Count: params.count,
+      ContinuationToken: params.continuationToken,
+      Entity: {
+        Id: params.titlePlayerAccountId,
+        Type: "title_player_account"
+      },
+    }, (error, result) => {
+      if (error) {
+        reject(error)
+        return
+      }
+
+      resolve({
+        success: true,
+        collectionIds: result.data.CollectionIds,
+        continuationToken: result.data.ContinuationToken,
+      })
+    })  
+  })
+}
+
+async function GetTitlePlayerAccountIdFromPlayFabId(params: any)
+{
+  return new Promise((resolve, reject) => {
+    PlayFabProfileAPI.GetTitlePlayersFromMasterPlayerAccountIds({
+      MasterPlayerAccountIds: [ params.playFabId ],
+    }, (error, result) => {
+      if (error) {
+        reject(error)
+        return
+      }
+
+      resolve({
+        success: true,
+        titlePlayerAccountId: result.data.TitlePlayerAccounts![params.playFabId].Id,
+      })
+    })
+  })
+}
+  
+
 const server = new Server(
   {
     name: "playfab-mcp-server",
@@ -175,6 +318,9 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     SEARCH_ITEMS_TOOL,
     GET_ALL_SEGMENTS_TOOL,
     GET_PLAYERS_IN_SEGMENTS_TOOL,
+    GET_INVENTORY_ITEMS_TOOL,
+    GET_INVENTORY_COLLECTION_IDS_TOOL,
+    GET_TITLE_PLAYER_ACCOUNT_ID_FROM_PLAYFAB_ID_TOOL,
   ],
 }))
 
@@ -202,6 +348,15 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           break
         case "get_players_in_segments":
           resolve(await GetPlayersInSegments(args))
+          break
+        case "get_inventory_items":
+          resolve(await GetInventoryItems(args))
+          break
+        case "get_inventory_collection_ids":
+          resolve(await GetInventoryCollectionIds(args))
+          break
+        case "get_title_player_account_id_from_playfab_id":
+          resolve(await GetTitlePlayerAccountIdFromPlayFabId(args))
           break
         default:
           reject({
