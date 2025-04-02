@@ -1,9 +1,11 @@
 {
   "name": "@akiojin/playfab-mcp-server",
   "version": "0.1.1",
+  "description": "PlayFab MCP Server",
+  "license": "MIT",
   "main": "dist/index.js",
   "bin": {
-    "mcp-server-dynamodb": "dist/index.js"
+    "mcp-server-playfab": "dist/index.js"
   },
   "scripts": {
     "build": "tsc && shx chmod +x dist/*.js",
