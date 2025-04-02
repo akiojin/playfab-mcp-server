@@ -86,16 +86,15 @@ PLAYFAB_DEV_SECRET_KEY=
    PlayFab Server running on stdio
    ```
 
-### Running with VS Code Insiders
+### Running with Cursor
 
-To use the PlayFab MCP server with VS Code Insiders and GitHub Copilot Agent Mode, follow these steps:
+To use the PlayFab MCP server with Cursor, follow these steps:
 
-1. Install [VS Code Insiders](https://code.visualstudio.com/insiders/).
-2. Install the pre-release versions of the GitHub Copilot and GitHub Copilot Chat extensions in VS Code Insiders.
-3. Open a new instance of VS Code Insiders in an empty folder.
-4. Copy the [`mcp.json`](./.vscode/mcp.json) file from this repository into your folder and update the values according to your environment.
-5. Launch GitHub Copilot and switch to Agent mode; the PlayFab MCP Server should appear in the tools list.
-6. For example, try a prompt like "Show me the latest 10 items" to verify that the server processes your query correctly.
+1. Install [Cursor Desktop](https://cursor.so/) if you haven't already.
+2. Open a new instance of Cursor in an empty folder.
+3. Copy the [`mcp.json`](./.cursor/mcp.json) file from this repository into your folder and update the values according to your environment.
+4. Launch Cursor; the PlayFab MCP Server should appear in the tools list.
+5. For example, try a prompt like "Show me the latest 10 items" to verify that the server processes your query correctly.
 
 ### Adding Your Project Details to Claude Desktop's Config File
 
@@ -107,7 +106,7 @@ Open Claude Desktop and navigate to File → Settings → Developer → Edit Con
     "playfab": {
       "command": "node",
       "args": [ "C:/Path/To/playfab-mcp/dist/index.js" ], // Specify the path to your PlayFab MCP server file
-        "env": {
+      "env": {
         "PLAYFAB_TITLE_ID": "Your PlayFab Title ID",
         "PLAYFAB_DEV_SECRET_KEY": "Your PlayFab Developer Secret Key"
       }
