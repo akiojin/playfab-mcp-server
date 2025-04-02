@@ -299,7 +299,6 @@ async function GetTitlePlayerAccountIdFromPlayFabId(params: any)
     })
   })
 }
-  
 
 const server = new Server(
   {
