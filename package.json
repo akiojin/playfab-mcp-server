@@ -1,5 +1,5 @@
 {
-  "name": "playfab-mcp-server",
+  "name": "@akiojin/playfab-mcp-server",
   "version": "0.1.0",
   "main": "dist/index.js",
   "bin": {
