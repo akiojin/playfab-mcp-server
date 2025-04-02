@@ -1,4 +1,5 @@
 # PlayFab MCP Server
+[![smithery badge](https://smithery.ai/badge/@akiojin/playfab-mcp-server)](https://smithery.ai/server/@akiojin/playfab-mcp-server)
 
 ## What Is This? 🤔
 
@@ -31,6 +32,14 @@ Follow these steps to get started:
 - Convert a PlayFab ID to a Title Player Account ID via the get_title_player_account_id_from_playfab_id API.
 
 ## Quick Start 🚀
+
+### Installing via Smithery
+
+To install PlayFab MCP Server for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@akiojin/playfab-mcp-server):
+
+```bash
+npx -y @smithery/cli install @akiojin/playfab-mcp-server --client claude
+```
 
 ### Prerequisites
 
@@ -98,7 +107,7 @@ Open Claude Desktop and navigate to File → Settings → Developer → Edit Con
     "playfab": {
       "command": "node",
       "args": [ "C:/Path/To/playfab-mcp/dist/index.js" ], // Specify the path to your PlayFab MCP server file
-      "env": {
+        "env": {
         "PLAYFAB_TITLE_ID": "Your PlayFab Title ID",
         "PLAYFAB_DEV_SECRET_KEY": "Your PlayFab Developer Secret Key"
       }
