@@ -10,9 +10,10 @@ import * as dotenv from "dotenv"
 import * as pf from "playfab-sdk"
 
 const PlayFab = pf.PlayFab as PlayFabModule.IPlayFab
-const PlayFabAuthentication = pf.PlayFabAuthentication as PlayFabAuthenticationModule.IPlayFabAuthentication
-const PlayFabEconomy = pf.PlayFabEconomy as PlayFabEconomyModule.IPlayFabEconomy
-const PlayFabServer = pf.PlayFabServer as PlayFabServerModule.IPlayFabServer
+const PlayFabAdminAPI = pf.PlayFabAdmin as PlayFabAdminModule.IPlayFabAdmin
+const PlayFabAuthenticationAPI = pf.PlayFabAuthentication as PlayFabAuthenticationModule.IPlayFabAuthentication
+const PlayFabEconomyAPI = pf.PlayFabEconomy as PlayFabEconomyModule.IPlayFabEconomy
+const PlayFabServerAPI = pf.PlayFabServer as PlayFabServerModule.IPlayFabServer
 
 dotenv.config()
 
@@ -69,18 +70,38 @@ const GET_ALL_SEGMENTS_TOOL: Tool = {
   },
 }
 
-const GET_PLAYERS_TOOL: Tool = {
-  name: "get_all_players",
-  description: "PlayFab get all players",
+const GET_PLAYERS_IN_SEGMENTS_TOOL: Tool = {
+  name: "get_players_in_segments",
+  description:
+    "Allows for paging through all players in a given segment. " +
+    "This API creates a snapshot of all player profiles that match the segment definition " +
+    "at the time of its creation and lives through the Total Seconds to Live, " +
+    "refreshing its life span on each subsequent use of the Continuation Token. " +
+    "Profiles that change during the course of paging will not be reflected in the results. " +
+    "AB Test segments are currently not supported by this operation. " +
+    "NOTE: This API is limited to being called 30 times in one minute. " +
+    "You will be returned an error if you exceed this threshold.",
   inputSchema: {
     type: "object",
-    properties: {},
-    required: [],
+    properties: {
+      segmentId: {
+        type: "string",
+        description: "The ID of the segment to retrieve players from."
+      },
+      continuationToken: {
+        type: "string",
+        description: "An opaque token used to retrieve the next page of items, if any are available."
+      },
+    },
+    required: [
+      "segmentId"
+    ],
   },
 }
+
 async function SearchItems(params: any) {
   return new Promise((resolve, reject) => {
-    PlayFabEconomy.SearchItems({
+    PlayFabEconomyAPI.SearchItems({
         Search: params.search,
         Filter: params.filter,
         OrderBy: params.orderBy,
@@ -100,9 +121,9 @@ async function SearchItems(params: any) {
     })
 }
 
-async function GetAllSegments() {
+async function GetAllSegments(params: any) {
   return new Promise((resolve, reject) => {
-    PlayFabServer.GetAllSegments({}, (error, result) => {
+    PlayFabAdminAPI.GetAllSegments({}, (error, result) => {
       if (error) {
         console.error("Error getting all segments:", error)
         reject(error)
@@ -116,16 +137,22 @@ async function GetAllSegments() {
   })
 }
 
-async function GetPlayers() {
+async function GetPlayersInSegments(params: any) {
   return new Promise((resolve, reject) => {
-    PlayFabServer.GetAllSegments({}, (error, result) => {
+    PlayFabAdminAPI.GetPlayersInSegment({
+      SegmentId: params.segmentId,
+      ContinuationToken: params.continuationToken,
+    }, (error, result) => {
       if (error) {
-        console.error("Error getting all segments:", error)
         reject(error)
+        return
       }
 
-      result.data.Segments?.forEach((segment) => {
-        console.log(segment)
+      resolve({
+        success: true,
+        players: result.data.PlayerProfiles,
+        continuationToken: result.data.ContinuationToken,
+        profilesInSegment: result.data.ProfilesInSegment
       })
     })
   })
@@ -147,7 +174,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
   tools: [
     SEARCH_ITEMS_TOOL,
     GET_ALL_SEGMENTS_TOOL,
-    GET_PLAYERS_TOOL,
+    GET_PLAYERS_IN_SEGMENTS_TOOL,
   ],
 }))
 
@@ -156,7 +183,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
   try {
     const result = await new Promise((resolve, reject) => {
-      PlayFabAuthentication.GetEntityToken({
+      PlayFabAuthenticationAPI.GetEntityToken({
         CustomTags: {
           user: PlayFab.buildIdentifier,
         }
@@ -171,10 +198,10 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           resolve(await SearchItems(args))
           break
         case "get_all_segments":
-          resolve(await GetAllSegments())
+          resolve(await GetAllSegments(args))
           break
-        case "get_all_players":
-          resolve(await GetPlayers())
+        case "get_players_in_segments":
+          resolve(await GetPlayersInSegments(args))
           break
         default:
           reject({
