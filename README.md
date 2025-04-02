@@ -105,13 +105,3 @@ Open Claude Desktop and navigate to File → Settings → Developer → Edit Con
 ```
 
 With these steps, you have successfully configured the PlayFab MCP server for use with your LLM client, allowing seamless interaction with PlayFab's services.
-
-## Contributing
-
-This project welcomes contributions and suggestions. Most contributions require you to agree to a Contributor License Agreement (CLA) to confirm that you have the appropriate rights to grant us the necessary permissions. For details, please visit https://cla.opensource.microsoft.com.
-
-When you submit a pull request, a CLA bot will automatically determine whether a CLA is required and will decorate the PR accordingly (e.g., with a status check or comment). You only need to complete this process once for all repositories using our CLA.
-
-## Trademarks
-
-This project may include trademarks or logos of projects, products, or services. Authorized use of Microsoft trademarks or logos is subject to the guidelines provided in [Microsoft's Trademark & Brand Guidelines](https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general). Modifications that could cause confusion or imply Microsoft sponsorship are not permitted. Use of third-party trademarks or logos must comply with those third parties’ policies.
