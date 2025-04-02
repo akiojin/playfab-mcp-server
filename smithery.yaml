@@ -1,0 +1,24 @@
+# Smithery configuration file: https://smithery.ai/docs/config#smitheryyaml
+
+startCommand:
+  type: stdio
+  configSchema:
+    # JSON Schema defining the configuration options for the MCP.
+    type: object
+    required:
+      - playfabTitleId
+      - playfabDevSecretKey
+    properties:
+      playfabTitleId:
+        type: string
+        description: Your PlayFab Title ID.
+      playfabDevSecretKey:
+        type: string
+        description: Your PlayFab Developer Secret Key.
+  commandFunction:
+    # A JS function that produces the CLI command based on the given config to start the MCP on stdio.
+    |-
+    (config) => ({ command: 'node', args: ['dist/index.js'], env: { PLAYFAB_TITLE_ID: config.playfabTitleId, PLAYFAB_DEV_SECRET_KEY: config.playfabDevSecretKey } })
+  exampleConfig:
+    playfabTitleId: ExampleTitleId
+    playfabDevSecretKey: ExampleSecretKey
