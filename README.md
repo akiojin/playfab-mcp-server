@@ -43,7 +43,7 @@ npx -y @smithery/cli install @akiojin/playfab-mcp-server --client claude
 
 ### Prerequisites
 
-- Node.js 14 or higher.
+- Node.js 18 or higher.
 - A valid PlayFab account (obtain your Title ID and Developer Secret Key via PlayFab Game Manager).
 - A supported LLM client such as Claude Desktop.
 
@@ -73,7 +73,7 @@ PLAYFAB_DEV_SECRET_KEY=
    ```
 
 3. **Start the Server**
-   Navigate to the `dist` folder and start the server with:
+   Start the server by executing:
 
    ```bash
    npm start
