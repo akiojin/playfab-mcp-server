@@ -1,9 +1,10 @@
 {
   "servers": {
     "PlayFab": {
-      "command": "node",
+      "command": "npx",
       "args": [
-        "E:/playfab-mcp-server/dist/index.js"
+        "-y",
+        "@akiojin/playfab-mcp-server"
       ],
       "env": {
         "PLAYFAB_TITLE_ID": "<your-title-id>",
