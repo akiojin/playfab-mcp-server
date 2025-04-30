@@ -58,28 +58,28 @@ PLAYFAB_DEV_SECRET_KEY=
 
 ### Getting Started
 
-1. **Install Dependencies**  
+1. **Install Dependencies**
    In the project root, run the following command to install all necessary dependencies:
 
    ```bash
    npm install
    ```
 
-2. **Build the Project**  
+2. **Build the Project**
    Compile the project by executing:
 
    ```bash
    npm run build
    ```
 
-3. **Start the Server**  
+3. **Start the Server**
    Navigate to the `dist` folder and start the server with:
 
    ```bash
    npm start
    ```
 
-4. **Confirmation Message**  
+4. **Confirmation Message**
    Upon startup, you should see this message:
 
    ```text
@@ -104,8 +104,11 @@ Open Claude Desktop and navigate to File → Settings → Developer → Edit Con
 {
   "mcpServers": {
     "playfab": {
-      "command": "node",
-      "args": [ "C:/Path/To/playfab-mcp/dist/index.js" ], // Specify the path to your PlayFab MCP server file
+      "command": "npx",
+      "args": [
+        "-y",
+        "@akiojin/playfab-mcp-server"
+      ],
       "env": {
         "PLAYFAB_TITLE_ID": "Your PlayFab Title ID",
         "PLAYFAB_DEV_SECRET_KEY": "Your PlayFab Developer Secret Key"
