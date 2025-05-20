@@ -309,16 +309,28 @@ async function GetInventoryCollectionIds(params: any) {
 
 async function GetTitlePlayerAccountIdFromPlayFabId(params: any) {
   return new Promise((resolve, reject) => {
-    PlayFabProfileAPI.GetTitlePlayersFromMasterPlayerAccountIds(params, (error, result) => {
-      if (error) {
-        reject(JSON.stringify(error, null, 2))
-        return
+    PlayFabProfileAPI.GetTitlePlayersFromMasterPlayerAccountIds(
+      {
+        TitleId: PlayFab.settings.titleId,
+        MasterPlayerAccountIds: [params.PlayFabId],
+      },
+      (error, result) => {
+        if (error) {
+          reject(JSON.stringify(error, null, 2))
+          return
+        }
+        const accounts = result.data.TitlePlayerAccounts || {}
+        const account = accounts[params.PlayFabId]
+        if (account && account.Id) {
+          resolve({
+            success: true,
+            titlePlayerAccountId: account.Id,
+          })
+        } else {
+          reject("TitlePlayerAccountId not found")
+        }
       }
-      resolve({
-        success: true,
-        titlePlayerAccountId: result.data.TitlePlayerAccounts![params.PlayFabId].Id,
-      })
-    })
+    )
   })
 }
 
