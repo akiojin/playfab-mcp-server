@@ -624,8 +624,15 @@ const CREATE_DRAFT_ITEM_TOOL: Tool = {
           },
           Title: {
             type: "object",
-            description: "Localized titles. Must include 'NEUTRAL'. Example: { 'NEUTRAL': 'Sword of Fire', 'en-US': 'Sword of Fire', 'ja-JP': '炎の剣' }",
-            additionalProperties: { type: "string" }
+            description: "Localized titles. REQUIRED: Must include 'NEUTRAL' locale. Example: { 'NEUTRAL': 'Sword of Fire', 'en-US': 'Sword of Fire', 'ja-JP': '炎の剣' }",
+            additionalProperties: { type: "string" },
+            properties: {
+              NEUTRAL: {
+                type: "string",
+                description: "Default title (REQUIRED)"
+              }
+            },
+            required: ["NEUTRAL"]
           },
           Description: {
             type: "object",
@@ -1274,6 +1281,12 @@ async function GetTitleInternalData(params: any) {
 
 async function CreateDraftItem(params: any) {
   return new Promise((resolve, reject) => {
+    // Validate NEUTRAL title is present
+    if (!params.Item || !params.Item.Title || !params.Item.Title.NEUTRAL) {
+      reject("Error: Title with NEUTRAL locale is required for creating draft items")
+      return
+    }
+    
     PlayFabEconomyAPI.CreateDraftItem({
       Item: params.Item,
       Publish: params.Publish,
