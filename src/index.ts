@@ -594,27 +594,66 @@ const CREATE_DRAFT_ITEM_TOOL: Tool = {
   description:
     "Creates a new draft item in the catalog. Draft items must be published before they can be used. " +
     "Use this to: 1) Add new items to your game, 2) Create virtual currency items, 3) Define bundles. " +
+    "IMPORTANT: ContentType and Tags must be pre-defined using update_catalog_config before they can be used here. " +
     "After creation, use publish_draft_item to make it available to players.",
   inputSchema: {
     type: "object",
     properties: {
       Item: {
         type: "object",
-        description: "The item definition",
+        description: "The catalog item definition",
         properties: {
           Type: {
             type: "string",
-            description: "Item type (e.g., 'catalogItem', 'currency', 'bundle')"
+            description: "Item type: 'bundle', 'catalogItem', 'currency', 'store', 'ugc', or 'subscription'"
+          },
+          ContentType: {
+            type: "string",
+            description: "Content type from pre-defined list (must be defined in update_catalog_config first, use get_catalog_config to see available types)"
+          },
+          AlternateIds: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                Type: { type: "string" },
+                Value: { type: "string" }
+              }
+            },
+            description: "Alternative IDs like 'FriendlyId' or marketplace names"
           },
           Title: {
             type: "object",
-            description: "Localized titles. Example: { 'en': 'Sword of Fire', 'ja': '炎の剣' }",
+            description: "Localized titles. Must include 'NEUTRAL'. Example: { 'NEUTRAL': 'Sword of Fire', 'en-US': 'Sword of Fire', 'ja-JP': '炎の剣' }",
             additionalProperties: { type: "string" }
           },
           Description: {
             type: "object",
-            description: "Localized descriptions",
+            description: "Localized descriptions (max 10000 chars per locale)",
             additionalProperties: { type: "string" }
+          },
+          Tags: {
+            type: "array",
+            items: { type: "string" },
+            description: "Tags to categorize the item (must be from pre-defined list in update_catalog_config, max 32 tags)"
+          },
+          DisplayProperties: {
+            type: "object",
+            description: "Custom display properties (max 10KB)",
+            additionalProperties: true
+          },
+          DefaultStackId: {
+            type: "string",
+            description: "Default stack ID for inventory (static ID or '{guid}')"
+          },
+          IsHidden: {
+            type: "boolean",
+            description: "Whether the item is hidden from players"
+          },
+          Platforms: {
+            type: "array",
+            items: { type: "string" },
+            description: "Supported platforms"
           },
           StartDate: {
             type: "string",
@@ -623,19 +662,6 @@ const CREATE_DRAFT_ITEM_TOOL: Tool = {
           EndDate: {
             type: "string",
             description: "When the item expires (ISO 8601 format)"
-          },
-          IsHidden: {
-            type: "boolean",
-            description: "Whether the item is hidden from players"
-          },
-          IsStackable: {
-            type: "boolean",
-            description: "Whether multiple can be stacked in inventory"
-          },
-          DisplayProperties: {
-            type: "object",
-            description: "Custom display properties",
-            additionalProperties: true
           },
           PriceOptions: {
             type: "object",
@@ -653,23 +679,25 @@ const CREATE_DRAFT_ITEM_TOOL: Tool = {
                         properties: {
                           ItemId: { type: "string" },
                           Amount: { type: "number" }
-                        }
+                        },
+                        required: ["Amount"]
                       }
-                    }
+                    },
+                    UnitAmount: { type: "number" },
+                    UnitDurationInSeconds: { type: "number" }
                   }
                 }
               }
             }
           }
-        },
-        required: ["Type"]
+        }
       },
       Publish: {
         type: "boolean",
-        description: "Whether to publish immediately after creation"
+        description: "Whether to publish immediately after creation (default: false)"
       }
     },
-    required: ["Item"],
+    required: [],
   },
 }
 
@@ -677,7 +705,8 @@ const UPDATE_DRAFT_ITEM_TOOL: Tool = {
   name: "update_draft_item",
   description:
     "Updates an existing draft item in the catalog. " +
-    "Changes only affect the draft version until published.",
+    "Changes only affect the draft version until published. " +
+    "IMPORTANT: ContentType and Tags must be pre-defined using update_catalog_config before they can be used here.",
   inputSchema: {
     type: "object",
     properties: {
@@ -687,7 +716,36 @@ const UPDATE_DRAFT_ITEM_TOOL: Tool = {
       },
       Item: {
         type: "object",
-        description: "Updated item properties (same structure as create_draft_item)"
+        description: "Updated item properties - include only fields you want to change",
+        properties: {
+          ContentType: {
+            type: "string",
+            description: "New content type (must be from pre-defined list in update_catalog_config)"
+          },
+          Tags: {
+            type: "array",
+            items: { type: "string" },
+            description: "New tags to replace existing ones (must be from pre-defined list in update_catalog_config)"
+          },
+          Title: {
+            type: "object",
+            additionalProperties: { type: "string" }
+          },
+          Description: {
+            type: "object",
+            additionalProperties: { type: "string" }
+          },
+          IsHidden: {
+            type: "boolean"
+          },
+          IsStackable: {
+            type: "boolean"
+          },
+          DisplayProperties: {
+            type: "object",
+            additionalProperties: true
+          }
+        }
       },
       Publish: {
         type: "boolean",
@@ -750,6 +808,43 @@ const GET_ITEM_TOOL: Tool = {
       }
     },
     required: ["ItemId"],
+  },
+}
+
+const UPDATE_CATALOG_CONFIG_TOOL: Tool = {
+  name: "update_catalog_config",
+  description:
+    "Updates the catalog configuration, including available ContentTypes and Tags. " +
+    "ContentTypes define the categories of items in your catalog (e.g., 'Game Item', 'Currency', 'Bundle'). " +
+    "Tags define the available tags that can be used on items. " +
+    "Maximum 128 ContentTypes (40 chars each), Maximum 1024 Tags (32 chars each).",
+  inputSchema: {
+    type: "object",
+    properties: {
+      ContentTypes: {
+        type: "array",
+        items: { type: "string" },
+        description: "List of content types available in the catalog. Example: ['Game Item', 'Currency', 'Bundle']"
+      },
+      Tags: {
+        type: "array",
+        items: { type: "string" },
+        description: "List of tags available for items. Example: ['weapon', 'armor', 'consumable', 'epic', 'rare']"
+      }
+    },
+    required: [],
+  },
+}
+
+const GET_CATALOG_CONFIG_TOOL: Tool = {
+  name: "get_catalog_config",
+  description:
+    "Retrieves the current catalog configuration. " +
+    "Returns the list of available ContentTypes and Tags that can be used when creating or updating items.",
+  inputSchema: {
+    type: "object",
+    properties: {},
+    required: [],
   },
 }
 
@@ -1246,6 +1341,50 @@ async function GetItem(params: any) {
   })
 }
 
+async function UpdateCatalogConfig(params: any) {
+  return new Promise((resolve, reject) => {
+    const config: any = {
+      Config: {
+        IsCatalogEnabled: true,
+        Catalog: {}
+      }
+    }
+    
+    if (params.ContentTypes) {
+      config.Config.Catalog.ContentTypes = params.ContentTypes
+    }
+    
+    if (params.Tags) {
+      config.Config.Catalog.Tags = params.Tags
+    }
+    
+    PlayFabEconomyAPI.UpdateCatalogConfig(config, (error) => {
+      if (error) {
+        reject(JSON.stringify(error, null, 2))
+        return
+      }
+      resolve({
+        success: true,
+      })
+    })
+  })
+}
+
+async function GetCatalogConfig() {
+  return new Promise((resolve, reject) => {
+    PlayFabEconomyAPI.GetCatalogConfig({}, (error, result) => {
+      if (error) {
+        reject(JSON.stringify(error, null, 2))
+        return
+      }
+      resolve({
+        success: true,
+        config: result.data.Config,
+      })
+    })
+  })
+}
+
 
 
 
@@ -1288,6 +1427,8 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     DELETE_ITEM_TOOL,
     PUBLISH_DRAFT_ITEM_TOOL,
     GET_ITEM_TOOL,
+    UPDATE_CATALOG_CONFIG_TOOL,
+    GET_CATALOG_CONFIG_TOOL,
   ],
 }))
 
@@ -1300,7 +1441,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         CustomTags: {
           user: PlayFab.buildIdentifier,
         }
-      }, (error, result) => {
+      }, (error) => {
         if (error) {
           reject(error);
           return;
@@ -1382,6 +1523,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             break;
           case "get_item":
             toolPromise = GetItem(args);
+            break;
+          case "update_catalog_config":
+            toolPromise = UpdateCatalogConfig(args);
+            break;
+          case "get_catalog_config":
+            toolPromise = GetCatalogConfig();
             break;
           default:
             reject({

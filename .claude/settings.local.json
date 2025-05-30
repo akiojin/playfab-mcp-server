@@ -18,7 +18,15 @@
       "Bash(rm:*)",
       "mcp__filesystem__read_multiple_files",
       "Bash(chmod:*)",
-      "Bash(gh api:*)"
+      "Bash(gh api:*)",
+      "Bash(rg:*)",
+      "Bash(/Users/akio-jinsenji/.nodebrew/node/v20.9.0/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg -A 5 -B 5 \"UpdateCatalogConfig\" PlayFabEconomy.js)",
+      "Bash(/Users/akio-jinsenji/.nodebrew/node/v20.9.0/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg -A 10 -B 10 \"ContentType\" PlayFabEconomy.js)",
+      "Bash(/Users/akio-jinsenji/.nodebrew/node/v20.9.0/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg -A 5 -B 5 \"Tag\" PlayFabEconomy.js)",
+      "Bash(/Users/akio-jinsenji/.nodebrew/node/v20.9.0/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg \"exports\\.[A-Z]\" PlayFabEconomy.js)",
+      "Bash(/Users/akio-jinsenji/.nodebrew/node/v20.9.0/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg -A 20 \"UpdateDraftItem\" PlayFabEconomy.js)",
+      "Bash(/Users/akio-jinsenji/.nodebrew/node/v20.9.0/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg -A 20 \"CreateDraftItem\" PlayFabEconomy.js)",
+      "Bash(grep:*)"
     ]
   },
   "enableAllProjectMcpServers": false
