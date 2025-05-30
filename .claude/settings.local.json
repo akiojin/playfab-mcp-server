@@ -4,7 +4,8 @@
       "WebFetch(domain:learn.microsoft.com)",
       "WebFetch(domain:github.com)",
       "Bash(npm run build:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "mcp__filesystem__list_directory"
     ]
   },
   "enableAllProjectMcpServers": false

@@ -26,6 +26,12 @@ Follow these steps to get started:
 
 #### Catalog & Search
 - Search for items using PlayFab's search_items API.
+- **Catalog Management (Economy v2):**
+  - Create new draft items with the create_draft_item API.
+  - Update existing draft items with the update_draft_item API.
+  - Delete items from catalog with the delete_item API.
+  - Publish draft items to make them available with the publish_draft_item API.
+  - Get detailed item information with the get_item API.
 
 #### Player Management
 - Retrieve comprehensive segment information.

@@ -589,6 +589,170 @@ const GET_TITLE_INTERNAL_DATA_TOOL: Tool = {
   },
 }
 
+const CREATE_DRAFT_ITEM_TOOL: Tool = {
+  name: "create_draft_item",
+  description:
+    "Creates a new draft item in the catalog. Draft items must be published before they can be used. " +
+    "Use this to: 1) Add new items to your game, 2) Create virtual currency items, 3) Define bundles. " +
+    "After creation, use publish_draft_item to make it available to players.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      Item: {
+        type: "object",
+        description: "The item definition",
+        properties: {
+          Type: {
+            type: "string",
+            description: "Item type (e.g., 'catalogItem', 'currency', 'bundle')"
+          },
+          Title: {
+            type: "object",
+            description: "Localized titles. Example: { 'en': 'Sword of Fire', 'ja': '炎の剣' }",
+            additionalProperties: { type: "string" }
+          },
+          Description: {
+            type: "object",
+            description: "Localized descriptions",
+            additionalProperties: { type: "string" }
+          },
+          StartDate: {
+            type: "string",
+            description: "When the item becomes available (ISO 8601 format)"
+          },
+          EndDate: {
+            type: "string",
+            description: "When the item expires (ISO 8601 format)"
+          },
+          IsHidden: {
+            type: "boolean",
+            description: "Whether the item is hidden from players"
+          },
+          IsStackable: {
+            type: "boolean",
+            description: "Whether multiple can be stacked in inventory"
+          },
+          DisplayProperties: {
+            type: "object",
+            description: "Custom display properties",
+            additionalProperties: true
+          },
+          PriceOptions: {
+            type: "object",
+            description: "Pricing configuration",
+            properties: {
+              Prices: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    Amounts: {
+                      type: "array",
+                      items: {
+                        type: "object",
+                        properties: {
+                          ItemId: { type: "string" },
+                          Amount: { type: "number" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        required: ["Type"]
+      },
+      Publish: {
+        type: "boolean",
+        description: "Whether to publish immediately after creation"
+      }
+    },
+    required: ["Item"],
+  },
+}
+
+const UPDATE_DRAFT_ITEM_TOOL: Tool = {
+  name: "update_draft_item",
+  description:
+    "Updates an existing draft item in the catalog. " +
+    "Changes only affect the draft version until published.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      ItemId: {
+        type: "string",
+        description: "The ID of the item to update"
+      },
+      Item: {
+        type: "object",
+        description: "Updated item properties (same structure as create_draft_item)"
+      },
+      Publish: {
+        type: "boolean",
+        description: "Whether to publish immediately after update"
+      }
+    },
+    required: ["ItemId", "Item"],
+  },
+}
+
+const DELETE_ITEM_TOOL: Tool = {
+  name: "delete_item",
+  description:
+    "Permanently deletes an item from the catalog. " +
+    "WARNING: This cannot be undone! The item will be removed from all player inventories.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      ItemId: {
+        type: "string",
+        description: "The ID of the item to delete"
+      }
+    },
+    required: ["ItemId"],
+  },
+}
+
+const PUBLISH_DRAFT_ITEM_TOOL: Tool = {
+  name: "publish_draft_item",
+  description:
+    "Publishes a draft item, making it available to players. " +
+    "Once published, the item can be purchased and used in the game.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      ItemId: {
+        type: "string",
+        description: "The ID of the draft item to publish"
+      },
+      ETag: {
+        type: "string",
+        description: "Optional ETag for concurrency control"
+      }
+    },
+    required: ["ItemId"],
+  },
+}
+
+const GET_ITEM_TOOL: Tool = {
+  name: "get_item",
+  description:
+    "Retrieves detailed information about a specific catalog item. " +
+    "Returns both draft and published versions if available.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      ItemId: {
+        type: "string",
+        description: "The ID of the item to retrieve"
+      }
+    },
+    required: ["ItemId"],
+  },
+}
+
 
 
 
@@ -993,6 +1157,95 @@ async function GetTitleInternalData(params: any) {
   })
 }
 
+async function CreateDraftItem(params: any) {
+  return new Promise((resolve, reject) => {
+    PlayFabEconomyAPI.CreateDraftItem({
+      Item: params.Item,
+      Publish: params.Publish,
+    }, (error, result) => {
+      if (error) {
+        reject(JSON.stringify(error, null, 2))
+        return
+      }
+      resolve({
+        success: true,
+        item: result.data.Item,
+      })
+    })
+  })
+}
+
+async function UpdateDraftItem(params: any) {
+  return new Promise((resolve, reject) => {
+    PlayFabEconomyAPI.UpdateDraftItem({
+      Item: {
+        Id: params.ItemId,
+        ...params.Item
+      },
+      Publish: params.Publish,
+    }, (error, result) => {
+      if (error) {
+        reject(JSON.stringify(error, null, 2))
+        return
+      }
+      resolve({
+        success: true,
+        item: result.data.Item,
+      })
+    })
+  })
+}
+
+async function DeleteItem(params: any) {
+  return new Promise((resolve, reject) => {
+    PlayFabEconomyAPI.DeleteItem({
+      Id: params.ItemId,
+    }, (error, result) => {
+      if (error) {
+        reject(JSON.stringify(error, null, 2))
+        return
+      }
+      resolve({
+        success: true,
+      })
+    })
+  })
+}
+
+async function PublishDraftItem(params: any) {
+  return new Promise((resolve, reject) => {
+    PlayFabEconomyAPI.PublishDraftItem({
+      Id: params.ItemId,
+      ETag: params.ETag,
+    }, (error, result) => {
+      if (error) {
+        reject(JSON.stringify(error, null, 2))
+        return
+      }
+      resolve({
+        success: true,
+      })
+    })
+  })
+}
+
+async function GetItem(params: any) {
+  return new Promise((resolve, reject) => {
+    PlayFabEconomyAPI.GetItem({
+      Id: params.ItemId,
+    }, (error, result) => {
+      if (error) {
+        reject(JSON.stringify(error, null, 2))
+        return
+      }
+      resolve({
+        success: true,
+        item: result.data.Item,
+      })
+    })
+  })
+}
+
 
 
 
@@ -1030,6 +1283,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     GET_TITLE_DATA_TOOL,
     SET_TITLE_INTERNAL_DATA_TOOL,
     GET_TITLE_INTERNAL_DATA_TOOL,
+    CREATE_DRAFT_ITEM_TOOL,
+    UPDATE_DRAFT_ITEM_TOOL,
+    DELETE_ITEM_TOOL,
+    PUBLISH_DRAFT_ITEM_TOOL,
+    GET_ITEM_TOOL,
   ],
 }))
 
@@ -1109,6 +1367,21 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             break;
           case "get_title_internal_data":
             toolPromise = GetTitleInternalData(args);
+            break;
+          case "create_draft_item":
+            toolPromise = CreateDraftItem(args);
+            break;
+          case "update_draft_item":
+            toolPromise = UpdateDraftItem(args);
+            break;
+          case "delete_item":
+            toolPromise = DeleteItem(args);
+            break;
+          case "publish_draft_item":
+            toolPromise = PublishDraftItem(args);
+            break;
+          case "get_item":
+            toolPromise = GetItem(args);
             break;
           default:
             reject({
