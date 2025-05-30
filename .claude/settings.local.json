@@ -12,7 +12,12 @@
       "Bash(npm version:*)",
       "Bash(git commit:*)",
       "Bash(npm publish:*)",
-      "Bash(npm:*)"
+      "Bash(npm:*)",
+      "Bash(find:*)",
+      "Bash(mkdir:*)",
+      "Bash(rm:*)",
+      "mcp__filesystem__read_multiple_files",
+      "Bash(chmod:*)"
     ]
   },
   "enableAllProjectMcpServers": false

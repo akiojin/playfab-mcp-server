@@ -157,3 +157,210 @@ Open Claude Desktop and navigate to File → Settings → Developer → Edit Con
 ```
 
 With these steps, you have successfully configured the PlayFab MCP server for use with your LLM client, allowing seamless interaction with PlayFab's services.
+
+## Contributing
+
+### Commit Message Convention
+
+This project follows [Conventional Commits](https://www.conventionalcommits.org/) for automated versioning and release.
+
+#### Commit Message Format
+
+```
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
+#### Types
+
+- **feat**: A new feature (triggers MINOR version bump)
+- **fix**: A bug fix (triggers PATCH version bump)
+- **docs**: Documentation only changes
+- **style**: Changes that do not affect the meaning of the code
+- **refactor**: A code change that neither fixes a bug nor adds a feature
+- **perf**: A code change that improves performance
+- **test**: Adding missing tests or correcting existing tests
+- **chore**: Changes to the build process or auxiliary tools
+
+#### Version Bumping Rules
+
+- **MAJOR** version: When commit message contains `BREAKING CHANGE` in footer or `!` after type/scope
+  - Example: `feat!: remove deprecated API endpoints`
+  - Example: `feat: new API\n\nBREAKING CHANGE: removed old endpoints`
+
+- **MINOR** version: When commit type is `feat`
+  - Example: `feat: add new PlayFab API integration`
+
+- **PATCH** version: When commit type is `fix`
+  - Example: `fix: correct error handling in API calls`
+
+### Release Process
+
+#### 1. Update Version and Changelog
+
+```bash
+# Analyze commits and update CHANGELOG.md
+# Then bump version based on changes:
+npm version patch  # or minor/major
+```
+
+#### 2. Push Changes and Tag
+
+```bash
+# Push the version commit
+git push origin main
+
+# Push the version tag created by npm version
+git push origin --tags
+```
+
+#### 3. Automatic Release & Publish
+
+When a `v*` tag is pushed, the `release-and-publish.yml` workflow automatically:
+- Creates a GitHub Release with release notes
+- Publishes the package to npm
+- Attaches release assets
+
+#### Prerequisites
+
+- `NPM_TOKEN` secret must be set in repository settings
+
+### Development Setup
+
+```bash
+# Install dependencies
+npm install
+
+# Build project
+npm run build
+
+# Watch mode
+npm run watch
+
+# Type check
+npm run typecheck
+
+# Run tests
+npm test
+```
+
+
+## Security
+
+We take security seriously. If you discover a security vulnerability within this project, please follow these steps:
+
+### Reporting Security Vulnerabilities
+
+1. **DO NOT** create a public GitHub issue for security vulnerabilities
+2. Instead, please report security issues via GitHub's private vulnerability reporting:
+   - Go to the **Security** tab of this repository
+   - Click on **Report a vulnerability**
+   - Provide detailed information about the vulnerability
+
+### What We Need From You
+
+- A description of the vulnerability
+- Steps to reproduce the issue
+- Potential impact
+- Any suggested fixes (optional)
+
+### Our Commitment
+
+- We will acknowledge receipt of your report within 48 hours
+- We will provide regular updates on our progress
+- We will credit you for the discovery (unless you prefer to remain anonymous)
+
+### Security Best Practices
+
+When using this server:
+
+1. **Never commit credentials**: Always use environment variables for sensitive data
+2. **Keep dependencies updated**: Regularly run `npm audit` and update packages
+3. **Use least privilege**: Only grant the minimum required permissions
+4. **Rotate keys regularly**: Change your PlayFab Developer Secret Keys periodically
+
+## Support
+
+### Getting Help
+
+If you encounter any issues or have questions about using the PlayFab MCP Server, here are the best ways to get support:
+
+1. **GitHub Issues**: For bug reports and feature requests, please [create an issue](https://github.com/akiojin/playfab-mcp-server/issues)
+2. **Discussions**: For general questions and community support, use [GitHub Discussions](https://github.com/akiojin/playfab-mcp-server/discussions)
+3. **Documentation**: Check the README and code comments for usage examples
+
+### Before Creating an Issue
+
+Please check if your issue has already been reported by searching existing issues. If you find a similar issue, you can add additional information as a comment.
+
+### What We Support
+
+- Installation and setup questions
+- Bug reports with reproducible steps
+- Feature requests and suggestions
+- Documentation improvements
+
+### What We Don't Support
+
+- General PlayFab API questions (please refer to [PlayFab Documentation](https://docs.microsoft.com/gaming/playfab/))
+- Issues with third-party tools or services
+- Custom implementation requests
+
+## Changelog
+
+## [0.3.2] - 2025-05-30
+
+### Added
+- CI/CD workflows for automated testing and publishing
+- Environment protection for version bump workflow
+- Package.json improvements (types, exports, publishConfig)
+- Security documentation and guidelines
+
+### Improved
+- Enhanced package.json with standard npm fields
+- Added TypeScript declaration file generation
+- Integrated multiple documentation files into README.md
+
+### Development
+- Added clean script for dist directory cleanup
+- Configured tsconfig for declaration file generation
+
+## [0.3.1] - 2025-05-30
+
+### Added
+- Catalog Management (Economy v2) API features
+  - `create_draft_item` - Create draft items
+  - `update_draft_item` - Update draft items
+  - `delete_item` - Delete items
+  - `publish_draft_item` - Publish draft items
+  - `get_item` - Get item information
+
+### Improved
+- Enhanced documentation
+  - Translated CLAUDE.md to Japanese with development guidelines
+  - Added detailed API feature descriptions to README.md
+- Project structure improvements
+  - Added .editorconfig for consistent coding standards
+  - Updated SECURITY.md and SUPPORT.md
+
+### Fixed
+- Removed unnecessary tool definitions (grant items, revoke items)
+- Improved documentation and code consistency
+
+### Development
+- Added TypeScript error checking command
+- Clarified build and dist update rules
+
+## [0.3.0] - 2025-05-20
+
+### Fixed
+- Improved error handling in GetTitlePlayerAccountIdFromPlayFabId function
+- Fixed account ID retrieval logic from PlayFabId
+- Added error message for non-existent account information
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
