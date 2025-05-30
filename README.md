@@ -24,12 +24,50 @@ Follow these steps to get started:
 
 ### What Can It Do? 📊
 
+#### Catalog & Search
 - Search for items using PlayFab's search_items API.
+- **Catalog Management (Economy v2):**
+  - Create new draft items with the create_draft_item API.
+  - Update existing draft items with the update_draft_item API.
+  - Delete items from catalog with the delete_item API.
+  - Publish draft items to make them available with the publish_draft_item API.
+  - Get detailed item information with the get_item API.
+
+#### Player Management
 - Retrieve comprehensive segment information.
 - Query player profiles within specified segments.
-- Retrieve current inventory items with the get_inventory_items API.
-- Fetch inventory collection IDs using the get_inventory_collection_ids API.
 - Convert a PlayFab ID to a Title Player Account ID via the get_title_player_account_id_from_playfab_id API.
+- Get detailed user account information with the get_user_account_info API.
+
+#### Inventory Management
+- **Get Operations:**
+  - Retrieve current inventory items with the get_inventory_items API.
+  - Fetch inventory collection IDs using the get_inventory_collection_ids API.
+- **Add/Remove Operations:**
+  - Add items to inventory with the add_inventory_items API.
+  - Delete items from inventory with the delete_inventory_items API.
+  - Subtract specific amounts with the subtract_inventory_items API.
+- **Modify Operations:**
+  - Update item properties with the update_inventory_items API.
+
+#### Economy v2 Administration
+- Execute batch inventory operations with the execute_inventory_operations API.
+- Note: In Economy v2, virtual currencies are managed as inventory items.
+
+#### User Account Administration
+- Ban players by ID, IP, or MAC address with the ban_users API.
+- Unban players completely with the revoke_all_bans_for_user API.
+
+#### Player Data Management
+- Retrieve player custom data with the get_user_data API.
+- Update player custom data with the update_user_data API.
+
+#### Title Configuration Management
+- Set global title data with the set_title_data API.
+- Retrieve title data with the get_title_data API.
+- Set server-only internal data with the set_title_internal_data API.
+- Retrieve internal data with the get_title_internal_data API.
+
 
 ## Quick Start 🚀
 

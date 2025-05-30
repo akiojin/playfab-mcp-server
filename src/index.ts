@@ -23,9 +23,10 @@ PlayFab.settings.developerSecretKey = process.env.PLAYFAB_DEV_SECRET_KEY!
 const SEARCH_ITEMS_TOOL: Tool = {
   name: "search_items",
   description:
-    "Executes a search against the public catalog using the provided search parameters and returns a set of paginated results. " +
-    "Use Count for page size, Filter for OData-style filtering, OrderBy for sorting, and Search for text search. " +
-    "More info: https://learn.microsoft.com/en-us/gaming/playfab/features/economy-v2/catalog/search",
+    "Searches for items in the PlayFab catalog (Economy v2). Use this when you need to find items by name, type, or other properties. " +
+    "Common uses: Finding all weapons, searching for items containing 'sword', filtering by price range. " +
+    "Returns item details including ID, name, description, and prices. " +
+    "Supports pagination for large result sets. Use the returned items' IDs with inventory management tools.",
   inputSchema: {
     type: "object",
     properties: {
@@ -96,10 +97,10 @@ const GET_PLAYERS_IN_SEGMENTS_TOOL: Tool = {
 const ADD_INVENTORY_ITEMS_TOOL: Tool = {
   name: "add_inventory_items",
   description:
-    "Adds an item to a player's inventory." +
-    "You must specify the Item (InventoryItemReference object) and TitlePlayerAccountId." +
-    "Other parameters are optional." +
-    "See: https://learn.microsoft.com/ja-jp/rest/api/playfab/economy/inventory/add-inventory-items?view=playfab-rest",
+    "Grants items or virtual currency to a player's inventory. Use this when you need to: " +
+    "1) Give rewards to players, 2) Add purchased items, 3) Grant virtual currency (use currency item ID). " +
+    "For bulk operations across multiple players, use grant_items_to_users instead. " +
+    "Note: In Economy v2, virtual currencies are items - use their item IDs, not currency codes.",
   inputSchema: {
     type: "object",
     properties: {
@@ -206,7 +207,10 @@ const GET_INVENTORY_COLLECTION_IDS_TOOL: Tool = {
 
 const GET_TITLE_PLAYER_ACCOUNT_ID_FROM_PLAYFAB_ID_TOOL: Tool = {
   name: "get_title_player_account_id_from_playfab_id",
-  description: "Converts a PlayFabId (master player account ID) to a TitlePlayerAccountId (used for inventory and other APIs).",
+  description: 
+    "Converts a PlayFabId to TitlePlayerAccountId. IMPORTANT: Use this before any inventory operations! " +
+    "PlayFabId (from login/user info) ≠ TitlePlayerAccountId (needed for inventory). " +
+    "Example flow: Get PlayFabId from user data → Convert with this tool → Use result for inventory APIs.",
   inputSchema: {
     type: "object",
     properties: {
@@ -218,6 +222,539 @@ const GET_TITLE_PLAYER_ACCOUNT_ID_FROM_PLAYFAB_ID_TOOL: Tool = {
     required: [ "PlayFabId" ],
   },
 }
+
+const DELETE_INVENTORY_ITEMS_TOOL: Tool = {
+  name: "delete_inventory_items",
+  description:
+    "Deletes items from a player's inventory. " +
+    "You must specify the Item (InventoryItemReference object) and TitlePlayerAccountId. " +
+    "Warning: This permanently removes items from the player's inventory.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      TitlePlayerAccountId: {
+        type: "string",
+        description: "The unique Title Player Account ID of the player whose items will be deleted."
+      },
+      CollectionId: {
+        type: "string",
+        description: "The collection to delete items from. Use 'default' unless you have a custom collection."
+      },
+      Item: {
+        type: "object",
+        description: "The item to delete, as an InventoryItemReference object. Specify the Id and optionally StackId."
+      },
+      IdempotencyId: {
+        type: "string",
+        description: "A unique string to prevent duplicate requests. Use a UUID."
+      }
+    },
+    required: [
+      "TitlePlayerAccountId",
+      "Item"
+    ],
+  },
+}
+
+const SUBTRACT_INVENTORY_ITEMS_TOOL: Tool = {
+  name: "subtract_inventory_items",
+  description:
+    "Subtracts a specific amount of items from a player's inventory. " +
+    "Use this to reduce item quantities without completely removing them.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      TitlePlayerAccountId: {
+        type: "string",
+        description: "The unique Title Player Account ID of the player."
+      },
+      Amount: {
+        type: "number",
+        description: "How many of the item to subtract. Must be a positive integer."
+      },
+      CollectionId: {
+        type: "string",
+        description: "The collection to subtract items from. Use 'default' unless you have a custom collection."
+      },
+      Item: {
+        type: "object",
+        description: "The item to subtract, as an InventoryItemReference object."
+      },
+      IdempotencyId: {
+        type: "string",
+        description: "A unique string to prevent duplicate requests. Use a UUID."
+      },
+      DurationInSeconds: {
+        type: "number",
+        description: "How long (in seconds) until the subtraction expires. Omit for permanent subtraction."
+      }
+    },
+    required: [
+      "TitlePlayerAccountId",
+      "Amount",
+      "Item"
+    ],
+  },
+}
+
+const UPDATE_INVENTORY_ITEMS_TOOL: Tool = {
+  name: "update_inventory_items",
+  description:
+    "Updates properties of existing inventory items. " +
+    "Use this to modify item metadata, display properties, or custom data.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      TitlePlayerAccountId: {
+        type: "string",
+        description: "The unique Title Player Account ID of the player."
+      },
+      CollectionId: {
+        type: "string",
+        description: "The collection containing the items. Use 'default' unless you have a custom collection."
+      },
+      Item: {
+        type: "object",
+        description: "The item to update, as an InventoryItemReference object with Id and optionally StackId."
+      },
+      IdempotencyId: {
+        type: "string",
+        description: "A unique string to prevent duplicate requests. Use a UUID."
+      }
+    },
+    required: [
+      "TitlePlayerAccountId",
+      "Item"
+    ],
+  },
+}
+
+
+const EXECUTE_INVENTORY_OPERATIONS_TOOL: Tool = {
+  name: "execute_inventory_operations",
+  description:
+    "Execute multiple inventory operations in a single batch request. " +
+    "Supports up to 50 operations per request. Operations are atomic - all succeed or all fail.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      Operations: {
+        type: "array",
+        description: "Array of operations to execute.",
+        items: {
+          type: "object",
+          properties: {
+            Add: {
+              type: "object",
+              description: "Add operation details",
+              properties: {
+                Item: { type: "object" },
+                Amount: { type: "number" },
+                DurationInSeconds: { type: "number" }
+              }
+            },
+            Delete: {
+              type: "object",
+              description: "Delete operation details",
+              properties: {
+                Item: { type: "object" }
+              }
+            },
+            Subtract: {
+              type: "object",
+              description: "Subtract operation details",
+              properties: {
+                Item: { type: "object" },
+                Amount: { type: "number" }
+              }
+            },
+            Update: {
+              type: "object",
+              description: "Update operation details",
+              properties: {
+                Item: { type: "object" }
+              }
+            }
+          }
+        }
+      },
+      Entity: {
+        type: "object",
+        description: "Target entity for operations",
+        properties: {
+          Id: { type: "string", description: "Title Player Account ID" },
+          Type: { type: "string", enum: ["title_player_account"] }
+        },
+        required: ["Id", "Type"]
+      },
+      CollectionId: {
+        type: "string",
+        description: "Collection ID (default: 'default')"
+      },
+      IdempotencyId: {
+        type: "string",
+        description: "Unique ID to prevent duplicate operations"
+      }
+    },
+    required: ["Operations", "Entity"],
+  },
+}
+
+const BAN_USERS_TOOL: Tool = {
+  name: "ban_users",
+  description:
+    "Bans players from accessing the game. Use when: 1) Player violates terms, 2) Suspicious activity detected, 3) Temporary suspension needed. " +
+    "Can ban by: PlayFabId (specific player), IPAddress (block IP), MACAddress (block device). " +
+    "Set DurationInHours for temp bans, omit for permanent. Always include clear Reason for records.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      Bans: {
+        type: "array",
+        description: "Array of ban requests.",
+        items: {
+          type: "object",
+          properties: {
+            PlayFabId: { type: "string", description: "PlayFab ID to ban" },
+            IPAddress: { type: "string", description: "IP address to ban" },
+            MACAddress: { type: "string", description: "MAC address to ban" },
+            Reason: { type: "string", description: "Reason for the ban" },
+            DurationInHours: { type: "number", description: "Ban duration in hours (optional, permanent if not specified)" }
+          }
+        }
+      }
+    },
+    required: ["Bans"],
+  },
+}
+
+const REVOKE_ALL_BANS_FOR_USER_TOOL: Tool = {
+  name: "revoke_all_bans_for_user",
+  description:
+    "Removes all active bans for a specific player. " +
+    "This unbans the player completely.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      PlayFabId: {
+        type: "string",
+        description: "The PlayFab ID of the player to unban."
+      }
+    },
+    required: ["PlayFabId"],
+  },
+}
+
+const GET_USER_ACCOUNT_INFO_TOOL: Tool = {
+  name: "get_user_account_info",
+  description:
+    "Retrieves detailed account information for a player. " +
+    "Includes profile data, statistics, and linked accounts.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      PlayFabId: {
+        type: "string",
+        description: "The PlayFab ID of the player."
+      }
+    },
+    required: ["PlayFabId"],
+  },
+}
+
+const GET_USER_DATA_TOOL: Tool = {
+  name: "get_user_data",
+  description:
+    "Retrieves custom data stored for a player. " +
+    "Can retrieve specific keys or all data.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      PlayFabId: {
+        type: "string",
+        description: "The PlayFab ID of the player."
+      },
+      Keys: {
+        type: "array",
+        items: { type: "string" },
+        description: "Specific data keys to retrieve (optional, retrieves all if not specified)."
+      }
+    },
+    required: ["PlayFabId"],
+  },
+}
+
+const UPDATE_USER_DATA_TOOL: Tool = {
+  name: "update_user_data",
+  description:
+    "Updates custom data for a player. " +
+    "Can set multiple key-value pairs at once.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      PlayFabId: {
+        type: "string",
+        description: "The PlayFab ID of the player."
+      },
+      Data: {
+        type: "object",
+        description: "Key-value pairs of data to update.",
+        additionalProperties: { type: "string" }
+      },
+      Permission: {
+        type: "string",
+        enum: ["Private", "Public"],
+        description: "Data permission level. Default is 'Private'."
+      }
+    },
+    required: ["PlayFabId", "Data"],
+  },
+}
+
+const SET_TITLE_DATA_TOOL: Tool = {
+  name: "set_title_data",
+  description:
+    "Sets global game configuration visible to ALL players. Use for: " +
+    "1) Game version info, 2) Event schedules, 3) Feature flags, 4) Global settings. " +
+    "Format: Key-value pairs. Value can be JSON string for complex data. " +
+    "WARNING: This is PUBLIC data - use set_title_internal_data for sensitive configs!",
+  inputSchema: {
+    type: "object",
+    properties: {
+      Key: {
+        type: "string",
+        description: "The key for the title data."
+      },
+      Value: {
+        type: "string",
+        description: "The value to set (JSON string for complex data)."
+      }
+    },
+    required: ["Key", "Value"],
+  },
+}
+
+const GET_TITLE_DATA_TOOL: Tool = {
+  name: "get_title_data",
+  description:
+    "Retrieves global configuration data for the title. " +
+    "Can retrieve specific keys or all title data.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      Keys: {
+        type: "array",
+        items: { type: "string" },
+        description: "Specific keys to retrieve (optional, retrieves all if not specified)."
+      }
+    },
+  },
+}
+
+const SET_TITLE_INTERNAL_DATA_TOOL: Tool = {
+  name: "set_title_internal_data",
+  description:
+    "Sets server-only title data that is not accessible by clients. " +
+    "Use this for sensitive configuration like API keys, server settings, etc.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      Key: {
+        type: "string",
+        description: "The key for the internal data."
+      },
+      Value: {
+        type: "string",
+        description: "The value to set (JSON string for complex data)."
+      }
+    },
+    required: ["Key", "Value"],
+  },
+}
+
+const GET_TITLE_INTERNAL_DATA_TOOL: Tool = {
+  name: "get_title_internal_data",
+  description:
+    "Retrieves server-only title data. " +
+    "This data is not accessible by game clients.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      Keys: {
+        type: "array",
+        items: { type: "string" },
+        description: "Specific keys to retrieve (optional, retrieves all if not specified)."
+      }
+    },
+  },
+}
+
+const CREATE_DRAFT_ITEM_TOOL: Tool = {
+  name: "create_draft_item",
+  description:
+    "Creates a new draft item in the catalog. Draft items must be published before they can be used. " +
+    "Use this to: 1) Add new items to your game, 2) Create virtual currency items, 3) Define bundles. " +
+    "After creation, use publish_draft_item to make it available to players.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      Item: {
+        type: "object",
+        description: "The item definition",
+        properties: {
+          Type: {
+            type: "string",
+            description: "Item type (e.g., 'catalogItem', 'currency', 'bundle')"
+          },
+          Title: {
+            type: "object",
+            description: "Localized titles. Example: { 'en': 'Sword of Fire', 'ja': '炎の剣' }",
+            additionalProperties: { type: "string" }
+          },
+          Description: {
+            type: "object",
+            description: "Localized descriptions",
+            additionalProperties: { type: "string" }
+          },
+          StartDate: {
+            type: "string",
+            description: "When the item becomes available (ISO 8601 format)"
+          },
+          EndDate: {
+            type: "string",
+            description: "When the item expires (ISO 8601 format)"
+          },
+          IsHidden: {
+            type: "boolean",
+            description: "Whether the item is hidden from players"
+          },
+          IsStackable: {
+            type: "boolean",
+            description: "Whether multiple can be stacked in inventory"
+          },
+          DisplayProperties: {
+            type: "object",
+            description: "Custom display properties",
+            additionalProperties: true
+          },
+          PriceOptions: {
+            type: "object",
+            description: "Pricing configuration",
+            properties: {
+              Prices: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    Amounts: {
+                      type: "array",
+                      items: {
+                        type: "object",
+                        properties: {
+                          ItemId: { type: "string" },
+                          Amount: { type: "number" }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        required: ["Type"]
+      },
+      Publish: {
+        type: "boolean",
+        description: "Whether to publish immediately after creation"
+      }
+    },
+    required: ["Item"],
+  },
+}
+
+const UPDATE_DRAFT_ITEM_TOOL: Tool = {
+  name: "update_draft_item",
+  description:
+    "Updates an existing draft item in the catalog. " +
+    "Changes only affect the draft version until published.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      ItemId: {
+        type: "string",
+        description: "The ID of the item to update"
+      },
+      Item: {
+        type: "object",
+        description: "Updated item properties (same structure as create_draft_item)"
+      },
+      Publish: {
+        type: "boolean",
+        description: "Whether to publish immediately after update"
+      }
+    },
+    required: ["ItemId", "Item"],
+  },
+}
+
+const DELETE_ITEM_TOOL: Tool = {
+  name: "delete_item",
+  description:
+    "Permanently deletes an item from the catalog. " +
+    "WARNING: This cannot be undone! The item will be removed from all player inventories.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      ItemId: {
+        type: "string",
+        description: "The ID of the item to delete"
+      }
+    },
+    required: ["ItemId"],
+  },
+}
+
+const PUBLISH_DRAFT_ITEM_TOOL: Tool = {
+  name: "publish_draft_item",
+  description:
+    "Publishes a draft item, making it available to players. " +
+    "Once published, the item can be purchased and used in the game.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      ItemId: {
+        type: "string",
+        description: "The ID of the draft item to publish"
+      },
+      ETag: {
+        type: "string",
+        description: "Optional ETag for concurrency control"
+      }
+    },
+    required: ["ItemId"],
+  },
+}
+
+const GET_ITEM_TOOL: Tool = {
+  name: "get_item",
+  description:
+    "Retrieves detailed information about a specific catalog item. " +
+    "Returns both draft and published versions if available.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      ItemId: {
+        type: "string",
+        description: "The ID of the item to retrieve"
+      }
+    },
+    required: ["ItemId"],
+  },
+}
+
+
+
 
 async function SearchItems(params: any) {
   return new Promise((resolve, reject) => {
@@ -362,6 +899,356 @@ async function AddInventoryItems(params: any) {
   })
 }
 
+async function DeleteInventoryItems(params: any) {
+  return new Promise((resolve, reject) => {
+    PlayFabEconomyAPI.DeleteInventoryItems({
+      CollectionId: params.CollectionId,
+      Entity: {
+        Id: params.TitlePlayerAccountId,
+        Type: "title_player_account"
+      },
+      Item: params.Item,
+      IdempotencyId: params.IdempotencyId,
+    }, (error, result) => {
+      if (error) {
+        reject(JSON.stringify(error, null, 2))
+        return
+      }
+      resolve({
+        success: true,
+        eTag: result.data.ETag,
+        idempotencyId: result.data.IdempotencyId,
+        transactionIds: result.data.TransactionIds,
+      })
+    })
+  })
+}
+
+async function SubtractInventoryItems(params: any) {
+  return new Promise((resolve, reject) => {
+    PlayFabEconomyAPI.SubtractInventoryItems({
+      Amount: params.Amount,
+      CollectionId: params.CollectionId,
+      DurationInSeconds: params.DurationInSeconds,
+      Entity: {
+        Id: params.TitlePlayerAccountId,
+        Type: "title_player_account"
+      },
+      Item: params.Item,
+      IdempotencyId: params.IdempotencyId,
+      DeleteEmptyStacks: true,
+    }, (error, result) => {
+      if (error) {
+        reject(JSON.stringify(error, null, 2))
+        return
+      }
+      resolve({
+        success: true,
+        eTag: result.data.ETag,
+        idempotencyId: result.data.IdempotencyId,
+        transactionIds: result.data.TransactionIds,
+      })
+    })
+  })
+}
+
+async function UpdateInventoryItems(params: any) {
+  return new Promise((resolve, reject) => {
+    PlayFabEconomyAPI.UpdateInventoryItems({
+      CollectionId: params.CollectionId,
+      Entity: {
+        Id: params.TitlePlayerAccountId,
+        Type: "title_player_account"
+      },
+      Item: params.Item,
+      IdempotencyId: params.IdempotencyId,
+    }, (error, result) => {
+      if (error) {
+        reject(JSON.stringify(error, null, 2))
+        return
+      }
+      resolve({
+        success: true,
+        eTag: result.data.ETag,
+        idempotencyId: result.data.IdempotencyId,
+        transactionIds: result.data.TransactionIds,
+      })
+    })
+  })
+}
+
+
+async function ExecuteInventoryOperations(params: any) {
+  return new Promise((resolve, reject) => {
+    PlayFabEconomyAPI.ExecuteInventoryOperations({
+      Operations: params.Operations,
+      Entity: params.Entity,
+      CollectionId: params.CollectionId,
+      IdempotencyId: params.IdempotencyId,
+    }, (error, result) => {
+      if (error) {
+        reject(JSON.stringify(error, null, 2))
+        return
+      }
+      resolve({
+        success: true,
+        eTag: result.data.ETag,
+        idempotencyId: result.data.IdempotencyId,
+        transactionIds: result.data.TransactionIds,
+      })
+    })
+  })
+}
+
+async function BanUsers(params: any) {
+  return new Promise((resolve, reject) => {
+    PlayFabAdminAPI.BanUsers({
+      Bans: params.Bans,
+    }, (error, result) => {
+      if (error) {
+        reject(JSON.stringify(error, null, 2))
+        return
+      }
+      resolve({
+        success: true,
+        banData: result.data.BanData,
+      })
+    })
+  })
+}
+
+async function RevokeAllBansForUser(params: any) {
+  return new Promise((resolve, reject) => {
+    PlayFabAdminAPI.RevokeAllBansForUser({
+      PlayFabId: params.PlayFabId,
+    }, (error, result) => {
+      if (error) {
+        reject(JSON.stringify(error, null, 2))
+        return
+      }
+      resolve({
+        success: true,
+        banData: result.data.BanData,
+      })
+    })
+  })
+}
+
+async function GetUserAccountInfo(params: any) {
+  return new Promise((resolve, reject) => {
+    PlayFabAdminAPI.GetUserAccountInfo({
+      PlayFabId: params.PlayFabId,
+    }, (error, result) => {
+      if (error) {
+        reject(JSON.stringify(error, null, 2))
+        return
+      }
+      resolve({
+        success: true,
+        userInfo: result.data.UserInfo,
+      })
+    })
+  })
+}
+
+async function GetUserData(params: any) {
+  return new Promise((resolve, reject) => {
+    PlayFabAdminAPI.GetUserData({
+      PlayFabId: params.PlayFabId,
+      Keys: params.Keys,
+    }, (error, result) => {
+      if (error) {
+        reject(JSON.stringify(error, null, 2))
+        return
+      }
+      resolve({
+        success: true,
+        data: result.data.Data,
+        dataVersion: result.data.DataVersion,
+      })
+    })
+  })
+}
+
+async function UpdateUserData(params: any) {
+  return new Promise((resolve, reject) => {
+    PlayFabAdminAPI.UpdateUserData({
+      PlayFabId: params.PlayFabId,
+      Data: params.Data,
+      Permission: params.Permission || "Private",
+    }, (error, result) => {
+      if (error) {
+        reject(JSON.stringify(error, null, 2))
+        return
+      }
+      resolve({
+        success: true,
+        dataVersion: result.data.DataVersion,
+      })
+    })
+  })
+}
+
+async function SetTitleData(params: any) {
+  return new Promise((resolve, reject) => {
+    PlayFabAdminAPI.SetTitleData({
+      Key: params.Key,
+      Value: params.Value,
+    }, (error, result) => {
+      if (error) {
+        reject(JSON.stringify(error, null, 2))
+        return
+      }
+      resolve({
+        success: true,
+      })
+    })
+  })
+}
+
+async function GetTitleData(params: any) {
+  return new Promise((resolve, reject) => {
+    PlayFabAdminAPI.GetTitleData({
+      Keys: params.Keys,
+    }, (error, result) => {
+      if (error) {
+        reject(JSON.stringify(error, null, 2))
+        return
+      }
+      resolve({
+        success: true,
+        data: result.data.Data,
+      })
+    })
+  })
+}
+
+async function SetTitleInternalData(params: any) {
+  return new Promise((resolve, reject) => {
+    PlayFabAdminAPI.SetTitleInternalData({
+      Key: params.Key,
+      Value: params.Value,
+    }, (error, result) => {
+      if (error) {
+        reject(JSON.stringify(error, null, 2))
+        return
+      }
+      resolve({
+        success: true,
+      })
+    })
+  })
+}
+
+async function GetTitleInternalData(params: any) {
+  return new Promise((resolve, reject) => {
+    PlayFabAdminAPI.GetTitleInternalData({
+      Keys: params.Keys,
+    }, (error, result) => {
+      if (error) {
+        reject(JSON.stringify(error, null, 2))
+        return
+      }
+      resolve({
+        success: true,
+        data: result.data.Data,
+      })
+    })
+  })
+}
+
+async function CreateDraftItem(params: any) {
+  return new Promise((resolve, reject) => {
+    PlayFabEconomyAPI.CreateDraftItem({
+      Item: params.Item,
+      Publish: params.Publish,
+    }, (error, result) => {
+      if (error) {
+        reject(JSON.stringify(error, null, 2))
+        return
+      }
+      resolve({
+        success: true,
+        item: result.data.Item,
+      })
+    })
+  })
+}
+
+async function UpdateDraftItem(params: any) {
+  return new Promise((resolve, reject) => {
+    PlayFabEconomyAPI.UpdateDraftItem({
+      Item: {
+        Id: params.ItemId,
+        ...params.Item
+      },
+      Publish: params.Publish,
+    }, (error, result) => {
+      if (error) {
+        reject(JSON.stringify(error, null, 2))
+        return
+      }
+      resolve({
+        success: true,
+        item: result.data.Item,
+      })
+    })
+  })
+}
+
+async function DeleteItem(params: any) {
+  return new Promise((resolve, reject) => {
+    PlayFabEconomyAPI.DeleteItem({
+      Id: params.ItemId,
+    }, (error, result) => {
+      if (error) {
+        reject(JSON.stringify(error, null, 2))
+        return
+      }
+      resolve({
+        success: true,
+      })
+    })
+  })
+}
+
+async function PublishDraftItem(params: any) {
+  return new Promise((resolve, reject) => {
+    PlayFabEconomyAPI.PublishDraftItem({
+      Id: params.ItemId,
+      ETag: params.ETag,
+    }, (error, result) => {
+      if (error) {
+        reject(JSON.stringify(error, null, 2))
+        return
+      }
+      resolve({
+        success: true,
+      })
+    })
+  })
+}
+
+async function GetItem(params: any) {
+  return new Promise((resolve, reject) => {
+    PlayFabEconomyAPI.GetItem({
+      Id: params.ItemId,
+    }, (error, result) => {
+      if (error) {
+        reject(JSON.stringify(error, null, 2))
+        return
+      }
+      resolve({
+        success: true,
+        item: result.data.Item,
+      })
+    })
+  })
+}
+
+
+
+
 const server = new Server(
   {
     name: "playfab-mcp-server",
@@ -380,9 +1267,27 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     GET_ALL_SEGMENTS_TOOL,
     GET_PLAYERS_IN_SEGMENTS_TOOL,
     ADD_INVENTORY_ITEMS_TOOL,
+    DELETE_INVENTORY_ITEMS_TOOL,
+    SUBTRACT_INVENTORY_ITEMS_TOOL,
+    UPDATE_INVENTORY_ITEMS_TOOL,
     GET_INVENTORY_ITEMS_TOOL,
     GET_INVENTORY_COLLECTION_IDS_TOOL,
     GET_TITLE_PLAYER_ACCOUNT_ID_FROM_PLAYFAB_ID_TOOL,
+    EXECUTE_INVENTORY_OPERATIONS_TOOL,
+    BAN_USERS_TOOL,
+    REVOKE_ALL_BANS_FOR_USER_TOOL,
+    GET_USER_ACCOUNT_INFO_TOOL,
+    GET_USER_DATA_TOOL,
+    UPDATE_USER_DATA_TOOL,
+    SET_TITLE_DATA_TOOL,
+    GET_TITLE_DATA_TOOL,
+    SET_TITLE_INTERNAL_DATA_TOOL,
+    GET_TITLE_INTERNAL_DATA_TOOL,
+    CREATE_DRAFT_ITEM_TOOL,
+    UPDATE_DRAFT_ITEM_TOOL,
+    DELETE_ITEM_TOOL,
+    PUBLISH_DRAFT_ITEM_TOOL,
+    GET_ITEM_TOOL,
   ],
 }))
 
@@ -423,6 +1328,60 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             break;
           case "get_title_player_account_id_from_playfab_id":
             toolPromise = GetTitlePlayerAccountIdFromPlayFabId(args);
+            break;
+          case "delete_inventory_items":
+            toolPromise = DeleteInventoryItems(args);
+            break;
+          case "subtract_inventory_items":
+            toolPromise = SubtractInventoryItems(args);
+            break;
+          case "update_inventory_items":
+            toolPromise = UpdateInventoryItems(args);
+            break;
+          case "execute_inventory_operations":
+            toolPromise = ExecuteInventoryOperations(args);
+            break;
+          case "ban_users":
+            toolPromise = BanUsers(args);
+            break;
+          case "revoke_all_bans_for_user":
+            toolPromise = RevokeAllBansForUser(args);
+            break;
+          case "get_user_account_info":
+            toolPromise = GetUserAccountInfo(args);
+            break;
+          case "get_user_data":
+            toolPromise = GetUserData(args);
+            break;
+          case "update_user_data":
+            toolPromise = UpdateUserData(args);
+            break;
+          case "set_title_data":
+            toolPromise = SetTitleData(args);
+            break;
+          case "get_title_data":
+            toolPromise = GetTitleData(args);
+            break;
+          case "set_title_internal_data":
+            toolPromise = SetTitleInternalData(args);
+            break;
+          case "get_title_internal_data":
+            toolPromise = GetTitleInternalData(args);
+            break;
+          case "create_draft_item":
+            toolPromise = CreateDraftItem(args);
+            break;
+          case "update_draft_item":
+            toolPromise = UpdateDraftItem(args);
+            break;
+          case "delete_item":
+            toolPromise = DeleteItem(args);
+            break;
+          case "publish_draft_item":
+            toolPromise = PublishDraftItem(args);
+            break;
+          case "get_item":
+            toolPromise = GetItem(args);
             break;
           default:
             reject({
