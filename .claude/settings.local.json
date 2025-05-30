@@ -5,7 +5,8 @@
       "WebFetch(domain:github.com)",
       "Bash(npm run build:*)",
       "Bash(npx tsc:*)",
-      "mcp__filesystem__list_directory"
+      "mcp__filesystem__list_directory",
+      "mcp__filesystem__read_file"
     ]
   },
   "enableAllProjectMcpServers": false
