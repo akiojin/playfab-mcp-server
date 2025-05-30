@@ -32,21 +32,16 @@ Follow these steps to get started:
 - Query player profiles within specified segments.
 - Convert a PlayFab ID to a Title Player Account ID via the get_title_player_account_id_from_playfab_id API.
 
-#### Inventory Management (Complete Set)
+#### Inventory Management
 - **Get Operations:**
   - Retrieve current inventory items with the get_inventory_items API.
   - Fetch inventory collection IDs using the get_inventory_collection_ids API.
-  - View transaction history with the get_transaction_history API.
 - **Add/Remove Operations:**
   - Add items to inventory with the add_inventory_items API.
   - Delete items from inventory with the delete_inventory_items API.
   - Subtract specific amounts with the subtract_inventory_items API.
 - **Modify Operations:**
   - Update item properties with the update_inventory_items API.
-- **Transfer Operations:**
-  - Transfer items between players with the transfer_inventory_items API.
-- **Purchase Operations:**
-  - Purchase items from catalog with the purchase_inventory_items API.
 
 ## Quick Start 🚀
 

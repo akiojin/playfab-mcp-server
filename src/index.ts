@@ -219,6 +219,113 @@ const GET_TITLE_PLAYER_ACCOUNT_ID_FROM_PLAYFAB_ID_TOOL: Tool = {
   },
 }
 
+const DELETE_INVENTORY_ITEMS_TOOL: Tool = {
+  name: "delete_inventory_items",
+  description:
+    "Deletes items from a player's inventory. " +
+    "You must specify the Item (InventoryItemReference object) and TitlePlayerAccountId. " +
+    "Warning: This permanently removes items from the player's inventory.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      TitlePlayerAccountId: {
+        type: "string",
+        description: "The unique Title Player Account ID of the player whose items will be deleted."
+      },
+      CollectionId: {
+        type: "string",
+        description: "The collection to delete items from. Use 'default' unless you have a custom collection."
+      },
+      Item: {
+        type: "object",
+        description: "The item to delete, as an InventoryItemReference object. Specify the Id and optionally StackId."
+      },
+      IdempotencyId: {
+        type: "string",
+        description: "A unique string to prevent duplicate requests. Use a UUID."
+      }
+    },
+    required: [
+      "TitlePlayerAccountId",
+      "Item"
+    ],
+  },
+}
+
+const SUBTRACT_INVENTORY_ITEMS_TOOL: Tool = {
+  name: "subtract_inventory_items",
+  description:
+    "Subtracts a specific amount of items from a player's inventory. " +
+    "Use this to reduce item quantities without completely removing them.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      TitlePlayerAccountId: {
+        type: "string",
+        description: "The unique Title Player Account ID of the player."
+      },
+      Amount: {
+        type: "number",
+        description: "How many of the item to subtract. Must be a positive integer."
+      },
+      CollectionId: {
+        type: "string",
+        description: "The collection to subtract items from. Use 'default' unless you have a custom collection."
+      },
+      Item: {
+        type: "object",
+        description: "The item to subtract, as an InventoryItemReference object."
+      },
+      IdempotencyId: {
+        type: "string",
+        description: "A unique string to prevent duplicate requests. Use a UUID."
+      },
+      DurationInSeconds: {
+        type: "number",
+        description: "How long (in seconds) until the subtraction expires. Omit for permanent subtraction."
+      }
+    },
+    required: [
+      "TitlePlayerAccountId",
+      "Amount",
+      "Item"
+    ],
+  },
+}
+
+const UPDATE_INVENTORY_ITEMS_TOOL: Tool = {
+  name: "update_inventory_items",
+  description:
+    "Updates properties of existing inventory items. " +
+    "Use this to modify item metadata, display properties, or custom data.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      TitlePlayerAccountId: {
+        type: "string",
+        description: "The unique Title Player Account ID of the player."
+      },
+      CollectionId: {
+        type: "string",
+        description: "The collection containing the items. Use 'default' unless you have a custom collection."
+      },
+      Item: {
+        type: "object",
+        description: "The item to update, as an InventoryItemReference object with Id and optionally StackId."
+      },
+      IdempotencyId: {
+        type: "string",
+        description: "A unique string to prevent duplicate requests. Use a UUID."
+      }
+    },
+    required: [
+      "TitlePlayerAccountId",
+      "Item"
+    ],
+  },
+}
+
+
 async function SearchItems(params: any) {
   return new Promise((resolve, reject) => {
     PlayFabEconomyAPI.SearchItems(params, (error, result) => {
@@ -362,6 +469,85 @@ async function AddInventoryItems(params: any) {
   })
 }
 
+async function DeleteInventoryItems(params: any) {
+  return new Promise((resolve, reject) => {
+    PlayFabEconomyAPI.DeleteInventoryItems({
+      CollectionId: params.CollectionId,
+      Entity: {
+        Id: params.TitlePlayerAccountId,
+        Type: "title_player_account"
+      },
+      Item: params.Item,
+      IdempotencyId: params.IdempotencyId,
+    }, (error, result) => {
+      if (error) {
+        reject(JSON.stringify(error, null, 2))
+        return
+      }
+      resolve({
+        success: true,
+        eTag: result.data.ETag,
+        idempotencyId: result.data.IdempotencyId,
+        transactionIds: result.data.TransactionIds,
+      })
+    })
+  })
+}
+
+async function SubtractInventoryItems(params: any) {
+  return new Promise((resolve, reject) => {
+    PlayFabEconomyAPI.SubtractInventoryItems({
+      Amount: params.Amount,
+      CollectionId: params.CollectionId,
+      DurationInSeconds: params.DurationInSeconds,
+      Entity: {
+        Id: params.TitlePlayerAccountId,
+        Type: "title_player_account"
+      },
+      Item: params.Item,
+      IdempotencyId: params.IdempotencyId,
+      DeleteEmptyStacks: true,
+    }, (error, result) => {
+      if (error) {
+        reject(JSON.stringify(error, null, 2))
+        return
+      }
+      resolve({
+        success: true,
+        eTag: result.data.ETag,
+        idempotencyId: result.data.IdempotencyId,
+        transactionIds: result.data.TransactionIds,
+      })
+    })
+  })
+}
+
+async function UpdateInventoryItems(params: any) {
+  return new Promise((resolve, reject) => {
+    PlayFabEconomyAPI.UpdateInventoryItems({
+      CollectionId: params.CollectionId,
+      Entity: {
+        Id: params.TitlePlayerAccountId,
+        Type: "title_player_account"
+      },
+      Item: params.Item,
+      IdempotencyId: params.IdempotencyId,
+    }, (error, result) => {
+      if (error) {
+        reject(JSON.stringify(error, null, 2))
+        return
+      }
+      resolve({
+        success: true,
+        eTag: result.data.ETag,
+        idempotencyId: result.data.IdempotencyId,
+        transactionIds: result.data.TransactionIds,
+      })
+    })
+  })
+}
+
+
 const server = new Server(
   {
     name: "playfab-mcp-server",
@@ -380,6 +566,9 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     GET_ALL_SEGMENTS_TOOL,
     GET_PLAYERS_IN_SEGMENTS_TOOL,
     ADD_INVENTORY_ITEMS_TOOL,
+    DELETE_INVENTORY_ITEMS_TOOL,
+    SUBTRACT_INVENTORY_ITEMS_TOOL,
+    UPDATE_INVENTORY_ITEMS_TOOL,
     GET_INVENTORY_ITEMS_TOOL,
     GET_INVENTORY_COLLECTION_IDS_TOOL,
     GET_TITLE_PLAYER_ACCOUNT_ID_FROM_PLAYFAB_ID_TOOL,
@@ -423,6 +612,15 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             break;
           case "get_title_player_account_id_from_playfab_id":
             toolPromise = GetTitlePlayerAccountIdFromPlayFabId(args);
+            break;
+          case "delete_inventory_items":
+            toolPromise = DeleteInventoryItems(args);
+            break;
+          case "subtract_inventory_items":
+            toolPromise = SubtractInventoryItems(args);
+            break;
+          case "update_inventory_items":
+            toolPromise = UpdateInventoryItems(args);
             break;
           default:
             reject({
