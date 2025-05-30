@@ -853,7 +853,10 @@ const GET_CATALOG_CONFIG_TOOL: Tool = {
 
 async function SearchItems(params: any) {
   return new Promise((resolve, reject) => {
-    PlayFabEconomyAPI.SearchItems(params, (error, result) => {
+    PlayFabEconomyAPI.SearchItems({
+      ...params,
+      CustomTags: { mcp: 'true' }
+    }, (error, result) => {
       if (error) {
         reject(JSON.stringify(error, null, 2))
       } else {
@@ -869,7 +872,9 @@ async function SearchItems(params: any) {
 
 async function GetAllSegments(params: any) {
   return new Promise((resolve, reject) => {
-    PlayFabAdminAPI.GetAllSegments({}, (error, result) => {
+    PlayFabAdminAPI.GetAllSegments({
+      CustomTags: { mcp: 'true' }
+    }, (error, result) => {
       if (error) {
         reject(JSON.stringify(error, null, 2))
       } else {
@@ -884,7 +889,10 @@ async function GetAllSegments(params: any) {
 
 async function GetPlayersInSegments(params: any) {
   return new Promise((resolve, reject) => {
-    PlayFabAdminAPI.GetPlayersInSegment(params, (error, result) => {
+    PlayFabAdminAPI.GetPlayersInSegment({
+      ...params,
+      CustomTags: { mcp: 'true' }
+    }, (error, result) => {
       if (error) {
         reject(JSON.stringify(error, null, 2))
         return
@@ -909,6 +917,7 @@ async function GetInventoryItems(params: any) {
         Id: params.TitlePlayerAccountId,
         Type: "title_player_account"
       },
+      CustomTags: { mcp: 'true' }
     }, (error, result) => {
       if (error) {
         reject(JSON.stringify(error, null, 2))
@@ -925,7 +934,10 @@ async function GetInventoryItems(params: any) {
 
 async function GetInventoryCollectionIds(params: any) {
   return new Promise((resolve, reject) => {
-    PlayFabEconomyAPI.GetInventoryCollectionIds(params, (error, result) => {
+    PlayFabEconomyAPI.GetInventoryCollectionIds({
+      ...params,
+      CustomTags: { mcp: 'true' }
+    }, (error, result) => {
       if (error) {
         reject(JSON.stringify(error, null, 2))
         return
@@ -945,6 +957,7 @@ async function GetTitlePlayerAccountIdFromPlayFabId(params: any) {
       {
         TitleId: PlayFab.settings.titleId,
         MasterPlayerAccountIds: [params.PlayFabId],
+        CustomTags: { mcp: 'true' }
       },
       (error, result) => {
         if (error) {
@@ -979,6 +992,7 @@ async function AddInventoryItems(params: any) {
         Id: params.TitlePlayerAccountId,
         Type: "title_player_account"
       },
+      CustomTags: { mcp: 'true' }
     }, (error, result) => {
       if (error) {
         reject(JSON.stringify(error, null, 2))
@@ -1004,6 +1018,7 @@ async function DeleteInventoryItems(params: any) {
       },
       Item: params.Item,
       IdempotencyId: params.IdempotencyId,
+      CustomTags: { mcp: 'true' }
     }, (error, result) => {
       if (error) {
         reject(JSON.stringify(error, null, 2))
@@ -1032,6 +1047,7 @@ async function SubtractInventoryItems(params: any) {
       Item: params.Item,
       IdempotencyId: params.IdempotencyId,
       DeleteEmptyStacks: true,
+      CustomTags: { mcp: 'true' }
     }, (error, result) => {
       if (error) {
         reject(JSON.stringify(error, null, 2))
@@ -1057,6 +1073,7 @@ async function UpdateInventoryItems(params: any) {
       },
       Item: params.Item,
       IdempotencyId: params.IdempotencyId,
+      CustomTags: { mcp: 'true' }
     }, (error, result) => {
       if (error) {
         reject(JSON.stringify(error, null, 2))
@@ -1080,6 +1097,7 @@ async function ExecuteInventoryOperations(params: any) {
       Entity: params.Entity,
       CollectionId: params.CollectionId,
       IdempotencyId: params.IdempotencyId,
+      CustomTags: { mcp: 'true' }
     }, (error, result) => {
       if (error) {
         reject(JSON.stringify(error, null, 2))
@@ -1099,6 +1117,7 @@ async function BanUsers(params: any) {
   return new Promise((resolve, reject) => {
     PlayFabAdminAPI.BanUsers({
       Bans: params.Bans,
+      CustomTags: { mcp: 'true' }
     }, (error, result) => {
       if (error) {
         reject(JSON.stringify(error, null, 2))
@@ -1115,7 +1134,7 @@ async function BanUsers(params: any) {
 async function RevokeAllBansForUser(params: any) {
   return new Promise((resolve, reject) => {
     PlayFabAdminAPI.RevokeAllBansForUser({
-      PlayFabId: params.PlayFabId,
+      PlayFabId: params.PlayFabId
     }, (error, result) => {
       if (error) {
         reject(JSON.stringify(error, null, 2))
@@ -1132,7 +1151,7 @@ async function RevokeAllBansForUser(params: any) {
 async function GetUserAccountInfo(params: any) {
   return new Promise((resolve, reject) => {
     PlayFabAdminAPI.GetUserAccountInfo({
-      PlayFabId: params.PlayFabId,
+      PlayFabId: params.PlayFabId
     }, (error, result) => {
       if (error) {
         reject(JSON.stringify(error, null, 2))
@@ -1150,7 +1169,7 @@ async function GetUserData(params: any) {
   return new Promise((resolve, reject) => {
     PlayFabAdminAPI.GetUserData({
       PlayFabId: params.PlayFabId,
-      Keys: params.Keys,
+      Keys: params.Keys
     }, (error, result) => {
       if (error) {
         reject(JSON.stringify(error, null, 2))
@@ -1171,6 +1190,7 @@ async function UpdateUserData(params: any) {
       PlayFabId: params.PlayFabId,
       Data: params.Data,
       Permission: params.Permission || "Private",
+      CustomTags: { mcp: 'true' }
     }, (error, result) => {
       if (error) {
         reject(JSON.stringify(error, null, 2))
@@ -1188,8 +1208,8 @@ async function SetTitleData(params: any) {
   return new Promise((resolve, reject) => {
     PlayFabAdminAPI.SetTitleData({
       Key: params.Key,
-      Value: params.Value,
-    }, (error, result) => {
+      Value: params.Value
+    }, (error) => {
       if (error) {
         reject(JSON.stringify(error, null, 2))
         return
@@ -1204,7 +1224,7 @@ async function SetTitleData(params: any) {
 async function GetTitleData(params: any) {
   return new Promise((resolve, reject) => {
     PlayFabAdminAPI.GetTitleData({
-      Keys: params.Keys,
+      Keys: params.Keys
     }, (error, result) => {
       if (error) {
         reject(JSON.stringify(error, null, 2))
@@ -1222,7 +1242,7 @@ async function SetTitleInternalData(params: any) {
   return new Promise((resolve, reject) => {
     PlayFabAdminAPI.SetTitleInternalData({
       Key: params.Key,
-      Value: params.Value,
+      Value: params.Value
     }, (error, result) => {
       if (error) {
         reject(JSON.stringify(error, null, 2))
@@ -1238,7 +1258,7 @@ async function SetTitleInternalData(params: any) {
 async function GetTitleInternalData(params: any) {
   return new Promise((resolve, reject) => {
     PlayFabAdminAPI.GetTitleInternalData({
-      Keys: params.Keys,
+      Keys: params.Keys
     }, (error, result) => {
       if (error) {
         reject(JSON.stringify(error, null, 2))
@@ -1257,6 +1277,7 @@ async function CreateDraftItem(params: any) {
     PlayFabEconomyAPI.CreateDraftItem({
       Item: params.Item,
       Publish: params.Publish,
+      CustomTags: { mcp: 'true' }
     }, (error, result) => {
       if (error) {
         reject(JSON.stringify(error, null, 2))
@@ -1278,6 +1299,7 @@ async function UpdateDraftItem(params: any) {
         ...params.Item
       },
       Publish: params.Publish,
+      CustomTags: { mcp: 'true' }
     }, (error, result) => {
       if (error) {
         reject(JSON.stringify(error, null, 2))
@@ -1295,7 +1317,8 @@ async function DeleteItem(params: any) {
   return new Promise((resolve, reject) => {
     PlayFabEconomyAPI.DeleteItem({
       Id: params.ItemId,
-    }, (error, result) => {
+      CustomTags: { mcp: 'true' }
+    }, (error) => {
       if (error) {
         reject(JSON.stringify(error, null, 2))
         return
@@ -1312,7 +1335,8 @@ async function PublishDraftItem(params: any) {
     PlayFabEconomyAPI.PublishDraftItem({
       Id: params.ItemId,
       ETag: params.ETag,
-    }, (error, result) => {
+      CustomTags: { mcp: 'true' }
+    }, (error) => {
       if (error) {
         reject(JSON.stringify(error, null, 2))
         return
@@ -1328,6 +1352,7 @@ async function GetItem(params: any) {
   return new Promise((resolve, reject) => {
     PlayFabEconomyAPI.GetItem({
       Id: params.ItemId,
+      CustomTags: { mcp: 'true' }
     }, (error, result) => {
       if (error) {
         reject(JSON.stringify(error, null, 2))
@@ -1358,7 +1383,10 @@ async function UpdateCatalogConfig(params: any) {
       config.Config.Catalog.Tags = params.Tags
     }
     
-    PlayFabEconomyAPI.UpdateCatalogConfig(config, (error) => {
+    PlayFabEconomyAPI.UpdateCatalogConfig({
+      ...config,
+      CustomTags: { mcp: 'true' }
+    }, (error) => {
       if (error) {
         reject(JSON.stringify(error, null, 2))
         return
@@ -1372,7 +1400,9 @@ async function UpdateCatalogConfig(params: any) {
 
 async function GetCatalogConfig() {
   return new Promise((resolve, reject) => {
-    PlayFabEconomyAPI.GetCatalogConfig({}, (error, result) => {
+    PlayFabEconomyAPI.GetCatalogConfig({
+      CustomTags: { mcp: 'true' }
+    }, (error, result) => {
       if (error) {
         reject(JSON.stringify(error, null, 2))
         return
@@ -1440,6 +1470,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       PlayFabAuthenticationAPI.GetEntityToken({
         CustomTags: {
           user: PlayFab.buildIdentifier,
+          mcp: 'true'
         }
       }, (error) => {
         if (error) {
