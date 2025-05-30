@@ -6,7 +6,11 @@
       "Bash(npm run build:*)",
       "Bash(npx tsc:*)",
       "mcp__filesystem__list_directory",
-      "mcp__filesystem__read_file"
+      "mcp__filesystem__read_file",
+      "Bash(git add:*)",
+      "Bash(ls:*)",
+      "Bash(npm version:*)",
+      "Bash(git commit:*)"
     ]
   },
   "enableAllProjectMcpServers": false
