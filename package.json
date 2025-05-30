@@ -54,7 +54,7 @@
   "homepage": "https://github.com/akiojin/playfab-mcp-server#readme",
   "devDependencies": {
     "@types/dotenv": "^8.2.3",
-    "@types/node": "^20.17.32",
+    "@types/node": "^22.15.26",
     "shx": "^0.3.4",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
