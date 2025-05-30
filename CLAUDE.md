@@ -6,6 +6,14 @@
 - **ソースコード修正後は必ずビルドしてdistを更新する** - `npm run build`を実行
 - **ルールの追加は必ずCLAUDE.mdに追記する**
 - **CHANGELOG.mdは英語で記載する**
+- **「バージョンアップして」と指示があった場合**:
+  1. `git status`でコミットされていない変更がないか確認（変更がある場合はエラー）
+  2. 前回のバージョンアップからの差分をCHANGELOG.mdに追加
+  3. 変更内容に応じて適切なバージョンタイプを選択:
+     - `patch`: バグ修正のみ
+     - `minor`: 新機能追加（後方互換性あり）
+     - `major`: 破壊的変更
+  4. `npm version [patch/minor/major]`を実行
 
 ## 概要
 AIアシスタントがPlayFabサービスと対話できるようにするModel Context Protocol (MCP)サーバーです。
