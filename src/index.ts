@@ -97,9 +97,8 @@ const GET_PLAYERS_IN_SEGMENTS_TOOL: Tool = {
 const ADD_INVENTORY_ITEMS_TOOL: Tool = {
   name: "add_inventory_items",
   description:
-    "Grants items or virtual currency to a player's inventory. Use this when you need to: " +
-    "1) Give rewards to players, 2) Add purchased items, 3) Grant virtual currency (use currency item ID). " +
-    "For bulk operations across multiple players, use grant_items_to_users instead. " +
+    "⚠️ DEPRECATED: Use grant_items_to_users instead (works for single player too). " +
+    "Grants items or virtual currency to a player's inventory. " +
     "Note: In Economy v2, virtual currencies are items - use their item IDs, not currency codes.",
   inputSchema: {
     type: "object",
@@ -205,21 +204,25 @@ const GET_INVENTORY_COLLECTION_IDS_TOOL: Tool = {
   },
 }
 
-const GET_TITLE_PLAYER_ACCOUNT_ID_FROM_PLAYFAB_ID_TOOL: Tool = {
-  name: "get_title_player_account_id_from_playfab_id",
+const GET_TITLE_PLAYER_ACCOUNT_IDS_FROM_PLAYFAB_IDS_TOOL: Tool = {
+  name: "get_title_player_account_ids_from_playfab_ids",
   description: 
-    "Converts a PlayFabId to TitlePlayerAccountId. IMPORTANT: Use this before any inventory operations! " +
+    "Converts one or more PlayFabIds to TitlePlayerAccountIds. IMPORTANT: Use this before any inventory operations! " +
     "PlayFabId (from login/user info) ≠ TitlePlayerAccountId (needed for inventory). " +
+    "Supports both single ID (string) and multiple IDs (array). " +
     "Example flow: Get PlayFabId from user data → Convert with this tool → Use result for inventory APIs.",
   inputSchema: {
     type: "object",
     properties: {
-      PlayFabId: {
-        type: "string",
-        description: "The PlayFabId (master player account ID) to convert. Example: '276427AE27FF98AC'"
+      PlayFabIds: {
+        type: ["string", "array"],
+        description: "Single PlayFabId (string) or array of PlayFabIds to convert. Example: '276427AE27FF98AC' or ['id1', 'id2']",
+        items: {
+          type: "string"
+        }
       }
     },
-    required: [ "PlayFabId" ],
+    required: [ "PlayFabIds" ],
   },
 }
 
@@ -339,7 +342,9 @@ const EXECUTE_INVENTORY_OPERATIONS_TOOL: Tool = {
   name: "execute_inventory_operations",
   description:
     "Execute multiple inventory operations in a single batch request. " +
-    "Supports up to 50 operations per request. Operations are atomic - all succeed or all fail.",
+    "⚡ BULK OPERATION: Process up to 50 operations atomically (all succeed or all fail). " +
+    "Perfect for: Complex inventory updates, item exchanges, bulk modifications. " +
+    "Supports: Add, Delete, Subtract, Update operations in any combination.",
   inputSchema: {
     type: "object",
     properties: {
@@ -603,10 +608,9 @@ const GET_TITLE_INTERNAL_DATA_TOOL: Tool = {
 const CREATE_DRAFT_ITEM_TOOL: Tool = {
   name: "create_draft_item",
   description:
+    "⚠️ DEPRECATED: Use batch_create_draft_items instead (works for single items too). " +
     "Creates a new draft item in the catalog. Draft items must be published before they can be used. " +
-    "Use this to: 1) Add new items to your game, 2) Create virtual currency items, 3) Define bundles. " +
-    "IMPORTANT: ContentType and Tags must be pre-defined using update_catalog_config before they can be used here. " +
-    "After creation, use publish_draft_item to make it available to players.",
+    "IMPORTANT: ContentType and Tags must be pre-defined using update_catalog_config before they can be used here.",
   inputSchema: {
     type: "object",
     properties: {
@@ -724,7 +728,8 @@ const UPDATE_DRAFT_ITEM_TOOL: Tool = {
   description:
     "Updates an existing draft item in the catalog. " +
     "Changes only affect the draft version until published. " +
-    "IMPORTANT: ContentType and Tags must be pre-defined using update_catalog_config before they can be used here.",
+    "IMPORTANT: ContentType and Tags must be pre-defined using update_catalog_config before they can be used here. " +
+    "💡 TIP: For bulk updates, consider using execute_catalog_operations pattern.",
   inputSchema: {
     type: "object",
     properties: {
@@ -871,6 +876,107 @@ const GET_CATALOG_CONFIG_TOOL: Tool = {
   },
 }
 
+const BATCH_CREATE_DRAFT_ITEMS_TOOL: Tool = {
+  name: "batch_create_draft_items",
+  description:
+    "Creates one or more draft items in the catalog. Works for both single and bulk operations. " +
+    "⚡ RECOMMENDED: Use this for all item creation (single or multiple). " +
+    "Efficiently handles up to 50 items with automatic error handling for each item. " +
+    "Failed items won't stop the entire batch - you'll get status for each item.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      Items: {
+        type: "array",
+        description: "Array of items to create (1-50 items). For single item, just pass array with one element.",
+        minItems: 1,
+        maxItems: 50,
+        items: {
+          type: "object",
+          properties: {
+            Item: {
+              type: "object",
+              description: "The catalog item definition (same as create_draft_item)",
+              required: ["Title"]
+            },
+            Publish: {
+              type: "boolean",
+              description: "Whether to publish this item immediately after creation"
+            }
+          },
+          required: ["Item"]
+        }
+      },
+      ContinueOnError: {
+        type: "boolean",
+        description: "If true, continues processing remaining items even if some fail. Default: true"
+      }
+    },
+    required: ["Items"],
+  },
+}
+
+const GRANT_ITEMS_TO_USERS_TOOL: Tool = {
+  name: "grant_items_to_users",
+  description:
+    "Grants items to one or more players. Works for both single and bulk operations. " +
+    "⚡ RECOMMENDED: Use this for all item granting (single or multiple players). " +
+    "Supports patterns: 1) Items to single player, 2) Same items to many players, 3) Different items to different players. " +
+    "For complex single-player operations (mix of add/delete/update), use execute_inventory_operations.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      Grants: {
+        type: "array",
+        description: "Array of grant operations (1-100). For single player, just pass array with one element.",
+        minItems: 1,
+        maxItems: 100,
+        items: {
+          type: "object",
+          properties: {
+            TitlePlayerAccountId: {
+              type: "string",
+              description: "The player to grant items to"
+            },
+            Items: {
+              type: "array",
+              description: "Items to grant to this player",
+              items: {
+                type: "object",
+                properties: {
+                  ItemId: {
+                    type: "string",
+                    description: "The item ID to grant"
+                  },
+                  Amount: {
+                    type: "number",
+                    description: "How many to grant"
+                  },
+                  DurationInSeconds: {
+                    type: "number",
+                    description: "Optional expiration time"
+                  }
+                },
+                required: ["ItemId"]
+              }
+            },
+            CollectionId: {
+              type: "string",
+              description: "Collection ID (default: 'default')"
+            }
+          },
+          required: ["TitlePlayerAccountId", "Items"]
+        }
+      },
+      ContinueOnError: {
+        type: "boolean",
+        description: "If true, continues processing remaining grants even if some fail. Default: true"
+      }
+    },
+    required: ["Grants"],
+  },
+}
+
 
 
 
@@ -893,7 +999,7 @@ async function SearchItems(params: any) {
   })
 }
 
-async function GetAllSegments(params: any) {
+async function GetAllSegments() {
   return new Promise((resolve, reject) => {
     PlayFabAdminAPI.GetAllSegments({
       CustomTags: { mcp: 'true' }
@@ -974,12 +1080,22 @@ async function GetInventoryCollectionIds(params: any) {
   })
 }
 
-async function GetTitlePlayerAccountIdFromPlayFabId(params: any) {
+async function GetTitlePlayerAccountIdsFromPlayFabIds(params: any) {
   return new Promise((resolve, reject) => {
+    // Normalize input to array
+    const playFabIds = Array.isArray(params.PlayFabIds) 
+      ? params.PlayFabIds 
+      : [params.PlayFabIds]
+    
+    if (playFabIds.length === 0) {
+      reject("No PlayFabIds provided")
+      return
+    }
+    
     PlayFabProfileAPI.GetTitlePlayersFromMasterPlayerAccountIds(
       {
         TitleId: PlayFab.settings.titleId,
-        MasterPlayerAccountIds: [params.PlayFabId],
+        MasterPlayerAccountIds: playFabIds,
         CustomTags: { mcp: 'true' }
       },
       (error, result) => {
@@ -987,16 +1103,33 @@ async function GetTitlePlayerAccountIdFromPlayFabId(params: any) {
           reject(JSON.stringify(error, null, 2))
           return
         }
+        
         const accounts = result.data.TitlePlayerAccounts || {}
-        const account = accounts[params.PlayFabId]
-        if (account && account.Id) {
-          resolve({
-            success: true,
-            titlePlayerAccountId: account.Id,
-          })
-        } else {
-          reject("TitlePlayerAccountId not found")
+        const mappings = []
+        const notFound = []
+        
+        for (const playFabId of playFabIds) {
+          const account = accounts[playFabId]
+          if (account && account.Id) {
+            mappings.push({
+              playFabId: playFabId,
+              titlePlayerAccountId: account.Id,
+              entityType: account.Type || 'title_player_account'
+            })
+          } else {
+            notFound.push(playFabId)
+          }
         }
+        
+        resolve({
+          success: true,
+          mappings: mappings,
+          notFound: notFound,
+          totalRequested: playFabIds.length,
+          totalFound: mappings.length,
+          // For backward compatibility with single ID requests
+          titlePlayerAccountId: mappings.length === 1 ? mappings[0].titlePlayerAccountId : undefined
+        })
       }
     )
   })
@@ -1286,7 +1419,7 @@ async function SetTitleInternalData(params: any) {
     PlayFabAdminAPI.SetTitleInternalData({
       Key: params.Key,
       Value: params.Value
-    }, (error, result) => {
+    }, (error) => {
       if (error) {
         reject(JSON.stringify(error, null, 2))
         return
@@ -1471,6 +1604,113 @@ async function GetCatalogConfig() {
   })
 }
 
+async function BatchCreateDraftItems(params: any) {
+  const continueOnError = params.ContinueOnError !== false
+  const results = []
+  
+  for (let i = 0; i < params.Items.length; i++) {
+    const itemData = params.Items[i]
+    
+    try {
+      // Validate NEUTRAL title
+      if (!itemData.Item || !itemData.Item.Title || !itemData.Item.Title.NEUTRAL) {
+        throw new Error("Title with NEUTRAL locale is required")
+      }
+      
+      const result: any = await CreateDraftItem(itemData)
+      results.push({
+        index: i,
+        success: true,
+        item: result.item,
+        itemId: result.item?.Id
+      })
+    } catch (error) {
+      results.push({
+        index: i,
+        success: false,
+        error: String(error)
+      })
+      
+      if (!continueOnError) {
+        break
+      }
+    }
+  }
+  
+  const successCount = results.filter(r => r.success).length
+  const failureCount = results.filter(r => !r.success).length
+  
+  return {
+    success: failureCount === 0,
+    totalProcessed: results.length,
+    successCount,
+    failureCount,
+    results,
+    message: `Batch creation completed: ${successCount} succeeded, ${failureCount} failed out of ${params.Items.length} items.`
+  }
+}
+
+async function GrantItemsToUsers(params: any) {
+  const continueOnError = params.ContinueOnError !== false
+  const results = []
+  
+  for (let i = 0; i < params.Grants.length; i++) {
+    const grant = params.Grants[i]
+    
+    try {
+      // Process each item for the player
+      const grantResults = []
+      for (const item of grant.Items) {
+        const addParams = {
+          TitlePlayerAccountId: grant.TitlePlayerAccountId,
+          Amount: item.Amount || 1,
+          CollectionId: grant.CollectionId || 'default',
+          Item: { Id: item.ItemId },
+          DurationInSeconds: item.DurationInSeconds,
+          IdempotencyId: `grant_${Date.now()}_${i}_${item.ItemId}`
+        }
+        
+        const result: any = await AddInventoryItems(addParams)
+        grantResults.push({
+          itemId: item.ItemId,
+          success: true,
+          transactionId: result.transactionIds?.[0]
+        })
+      }
+      
+      results.push({
+        index: i,
+        playerId: grant.TitlePlayerAccountId,
+        success: true,
+        itemsGranted: grantResults
+      })
+    } catch (error) {
+      results.push({
+        index: i,
+        playerId: grant.TitlePlayerAccountId,
+        success: false,
+        error: String(error)
+      })
+      
+      if (!continueOnError) {
+        break
+      }
+    }
+  }
+  
+  const successCount = results.filter(r => r.success).length
+  const failureCount = results.filter(r => !r.success).length
+  
+  return {
+    success: failureCount === 0,
+    totalProcessed: results.length,
+    successCount,
+    failureCount,
+    results,
+    message: `Batch grant completed: ${successCount} players processed successfully, ${failureCount} failed out of ${params.Grants.length} total.`
+  }
+}
+
 
 
 
@@ -1497,7 +1737,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     UPDATE_INVENTORY_ITEMS_TOOL,
     GET_INVENTORY_ITEMS_TOOL,
     GET_INVENTORY_COLLECTION_IDS_TOOL,
-    GET_TITLE_PLAYER_ACCOUNT_ID_FROM_PLAYFAB_ID_TOOL,
+    GET_TITLE_PLAYER_ACCOUNT_IDS_FROM_PLAYFAB_IDS_TOOL,
     EXECUTE_INVENTORY_OPERATIONS_TOOL,
     BAN_USERS_TOOL,
     REVOKE_ALL_BANS_FOR_USER_TOOL,
@@ -1515,6 +1755,8 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     GET_ITEM_TOOL,
     UPDATE_CATALOG_CONFIG_TOOL,
     GET_CATALOG_CONFIG_TOOL,
+    BATCH_CREATE_DRAFT_ITEMS_TOOL,
+    GRANT_ITEMS_TO_USERS_TOOL,
   ],
 }))
 
@@ -1540,7 +1782,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             toolPromise = SearchItems(args);
             break;
           case "get_all_segments":
-            toolPromise = GetAllSegments(args);
+            toolPromise = GetAllSegments();
             break;
           case "get_players_in_segments":
             toolPromise = GetPlayersInSegments(args);
@@ -1616,6 +1858,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             break;
           case "get_catalog_config":
             toolPromise = GetCatalogConfig();
+            break;
+          case "batch_create_draft_items":
+            toolPromise = BatchCreateDraftItems(args);
+            break;
+          case "grant_items_to_users":
+            toolPromise = GrantItemsToUsers(args);
             break;
           default:
             reject({
