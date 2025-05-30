@@ -23,9 +23,10 @@ PlayFab.settings.developerSecretKey = process.env.PLAYFAB_DEV_SECRET_KEY!
 const SEARCH_ITEMS_TOOL: Tool = {
   name: "search_items",
   description:
-    "Executes a search against the public catalog using the provided search parameters and returns a set of paginated results. " +
-    "Use Count for page size, Filter for OData-style filtering, OrderBy for sorting, and Search for text search. " +
-    "More info: https://learn.microsoft.com/en-us/gaming/playfab/features/economy-v2/catalog/search",
+    "Searches for items in the PlayFab catalog (Economy v2). Use this when you need to find items by name, type, or other properties. " +
+    "Common uses: Finding all weapons, searching for items containing 'sword', filtering by price range. " +
+    "Returns item details including ID, name, description, and prices. " +
+    "Supports pagination for large result sets. Use the returned items' IDs with inventory management tools.",
   inputSchema: {
     type: "object",
     properties: {
@@ -96,10 +97,10 @@ const GET_PLAYERS_IN_SEGMENTS_TOOL: Tool = {
 const ADD_INVENTORY_ITEMS_TOOL: Tool = {
   name: "add_inventory_items",
   description:
-    "Adds an item to a player's inventory." +
-    "You must specify the Item (InventoryItemReference object) and TitlePlayerAccountId." +
-    "Other parameters are optional." +
-    "See: https://learn.microsoft.com/ja-jp/rest/api/playfab/economy/inventory/add-inventory-items?view=playfab-rest",
+    "Grants items or virtual currency to a player's inventory. Use this when you need to: " +
+    "1) Give rewards to players, 2) Add purchased items, 3) Grant virtual currency (use currency item ID). " +
+    "For bulk operations across multiple players, use grant_items_to_users instead. " +
+    "Note: In Economy v2, virtual currencies are items - use their item IDs, not currency codes.",
   inputSchema: {
     type: "object",
     properties: {
@@ -206,7 +207,10 @@ const GET_INVENTORY_COLLECTION_IDS_TOOL: Tool = {
 
 const GET_TITLE_PLAYER_ACCOUNT_ID_FROM_PLAYFAB_ID_TOOL: Tool = {
   name: "get_title_player_account_id_from_playfab_id",
-  description: "Converts a PlayFabId (master player account ID) to a TitlePlayerAccountId (used for inventory and other APIs).",
+  description: 
+    "Converts a PlayFabId to TitlePlayerAccountId. IMPORTANT: Use this before any inventory operations! " +
+    "PlayFabId (from login/user info) ≠ TitlePlayerAccountId (needed for inventory). " +
+    "Example flow: Get PlayFabId from user data → Convert with this tool → Use result for inventory APIs.",
   inputSchema: {
     type: "object",
     properties: {
@@ -325,62 +329,6 @@ const UPDATE_INVENTORY_ITEMS_TOOL: Tool = {
   },
 }
 
-const GRANT_ITEMS_TO_USERS_TOOL: Tool = {
-  name: "grant_items_to_users",
-  description:
-    "Grants items to multiple players (Admin API). " +
-    "Use this to distribute rewards, currencies, or items to players. " +
-    "Note: For virtual currencies in Economy v2, use the currency item ID.",
-  inputSchema: {
-    type: "object",
-    properties: {
-      ItemGrants: {
-        type: "array",
-        description: "Array of item grant requests.",
-        items: {
-          type: "object",
-          properties: {
-            PlayFabId: { type: "string", description: "PlayFab ID of the player" },
-            ItemId: { type: "string", description: "Item ID to grant (including currency items)" },
-            Annotation: { type: "string", description: "Optional annotation for the grant" },
-            Data: { 
-              type: "object", 
-              description: "Optional custom data for the item",
-              additionalProperties: { type: "string" }
-            }
-          },
-          required: ["PlayFabId", "ItemId"]
-        }
-      }
-    },
-    required: ["ItemGrants"],
-  },
-}
-
-const REVOKE_INVENTORY_ITEMS_TOOL: Tool = {
-  name: "revoke_inventory_items",
-  description:
-    "Revokes items from a player's inventory (Admin API). " +
-    "Use this to remove items that were incorrectly granted or for administrative purposes.",
-  inputSchema: {
-    type: "object",
-    properties: {
-      Items: {
-        type: "array",
-        description: "Array of items to revoke.",
-        items: {
-          type: "object",
-          properties: {
-            PlayFabId: { type: "string", description: "PlayFab ID of the player" },
-            ItemInstanceId: { type: "string", description: "Instance ID of the item to revoke" }
-          },
-          required: ["PlayFabId", "ItemInstanceId"]
-        }
-      }
-    },
-    required: ["Items"],
-  },
-}
 
 const EXECUTE_INVENTORY_OPERATIONS_TOOL: Tool = {
   name: "execute_inventory_operations",
@@ -455,9 +403,9 @@ const EXECUTE_INVENTORY_OPERATIONS_TOOL: Tool = {
 const BAN_USERS_TOOL: Tool = {
   name: "ban_users",
   description:
-    "Bans one or more players from the game. " +
-    "Can ban by PlayFab ID, IP address, or MAC address. " +
-    "Includes reason and duration options.",
+    "Bans players from accessing the game. Use when: 1) Player violates terms, 2) Suspicious activity detected, 3) Temporary suspension needed. " +
+    "Can ban by: PlayFabId (specific player), IPAddress (block IP), MACAddress (block device). " +
+    "Set DurationInHours for temp bans, omit for permanent. Always include clear Reason for records.",
   inputSchema: {
     type: "object",
     properties: {
@@ -566,8 +514,10 @@ const UPDATE_USER_DATA_TOOL: Tool = {
 const SET_TITLE_DATA_TOOL: Tool = {
   name: "set_title_data",
   description:
-    "Sets global configuration data for the title. " +
-    "This data is accessible by all players and can be used for game settings, configurations, etc.",
+    "Sets global game configuration visible to ALL players. Use for: " +
+    "1) Game version info, 2) Event schedules, 3) Feature flags, 4) Global settings. " +
+    "Format: Key-value pairs. Value can be JSON string for complex data. " +
+    "WARNING: This is PUBLIC data - use set_title_internal_data for sensitive configs!",
   inputSchema: {
     type: "object",
     properties: {
@@ -638,6 +588,7 @@ const GET_TITLE_INTERNAL_DATA_TOOL: Tool = {
     },
   },
 }
+
 
 
 
@@ -862,39 +813,6 @@ async function UpdateInventoryItems(params: any) {
   })
 }
 
-async function GrantItemsToUsers(params: any) {
-  return new Promise((resolve, reject) => {
-    PlayFabAdminAPI.GrantItemsToUsers({
-      ItemGrants: params.ItemGrants,
-    }, (error, result) => {
-      if (error) {
-        reject(JSON.stringify(error, null, 2))
-        return
-      }
-      resolve({
-        success: true,
-        itemGrantResults: result.data.ItemGrantResults,
-      })
-    })
-  })
-}
-
-async function RevokeInventoryItems(params: any) {
-  return new Promise((resolve, reject) => {
-    PlayFabAdminAPI.RevokeInventoryItems({
-      Items: params.Items,
-    }, (error, result) => {
-      if (error) {
-        reject(JSON.stringify(error, null, 2))
-        return
-      }
-      resolve({
-        success: true,
-        errors: result.data.Errors,
-      })
-    })
-  })
-}
 
 async function ExecuteInventoryOperations(params: any) {
   return new Promise((resolve, reject) => {
@@ -1077,6 +995,7 @@ async function GetTitleInternalData(params: any) {
 
 
 
+
 const server = new Server(
   {
     name: "playfab-mcp-server",
@@ -1101,8 +1020,6 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     GET_INVENTORY_ITEMS_TOOL,
     GET_INVENTORY_COLLECTION_IDS_TOOL,
     GET_TITLE_PLAYER_ACCOUNT_ID_FROM_PLAYFAB_ID_TOOL,
-    GRANT_ITEMS_TO_USERS_TOOL,
-    REVOKE_INVENTORY_ITEMS_TOOL,
     EXECUTE_INVENTORY_OPERATIONS_TOOL,
     BAN_USERS_TOOL,
     REVOKE_ALL_BANS_FOR_USER_TOOL,
@@ -1162,12 +1079,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             break;
           case "update_inventory_items":
             toolPromise = UpdateInventoryItems(args);
-            break;
-          case "grant_items_to_users":
-            toolPromise = GrantItemsToUsers(args);
-            break;
-          case "revoke_inventory_items":
-            toolPromise = RevokeInventoryItems(args);
             break;
           case "execute_inventory_operations":
             toolPromise = ExecuteInventoryOperations(args);

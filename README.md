@@ -45,8 +45,6 @@ Follow these steps to get started:
   - Update item properties with the update_inventory_items API.
 
 #### Economy v2 Administration
-- Grant items and currencies to players with the grant_items_to_users API.
-- Revoke items from players with the revoke_inventory_items API.
 - Execute batch inventory operations with the execute_inventory_operations API.
 - Note: In Economy v2, virtual currencies are managed as inventory items.
 
@@ -63,6 +61,7 @@ Follow these steps to get started:
 - Retrieve title data with the get_title_data API.
 - Set server-only internal data with the set_title_internal_data API.
 - Retrieve internal data with the get_title_internal_data API.
+
 
 ## Quick Start 🚀
 
