@@ -317,6 +317,29 @@ Please check if your issue has already been reported by searching existing issue
 
 ## Changelog
 
+## [0.3.3] - 2025-05-30
+
+### Added
+- Automated dependency management with Dependabot auto-merge for patch updates
+- Branch protection rules for main branch
+- Auto-merge workflow for Dependabot patch updates
+
+### Changed
+- Consolidated all documentation into README.md
+- Simplified CI/CD workflow structure
+- Updated release process to be more streamlined
+
+### Fixed
+- TypeScript declaration file generation in build output
+
+### Security
+- Updated dependencies:
+  - playfab-sdk: 2.172.250428 → 2.174.250526
+  - @modelcontextprotocol/sdk: 1.10.2 → 1.12.1
+  - shx: 0.3.4 → 0.4.0 (dev)
+  - @types/node: 20.17.32 → 22.15.26 (dev)
+  - softprops/action-gh-release: v1 → v2
+
 ## [0.3.2] - 2025-05-30
 
 ### Added
