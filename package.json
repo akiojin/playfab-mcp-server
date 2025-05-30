@@ -5,6 +5,7 @@
   "license": "MIT",
   "author": "akiojin",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "bin": {
     "mcp-server-playfab": "dist/index.js"
   },
@@ -13,7 +14,12 @@
     "clean": "shx rm -rf dist",
     "prepare": "npm run build",
     "watch": "tsc --watch",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "echo \"Lint not configured yet\"",
+    "typecheck": "tsc --noEmit",
+    "prebuild": "npm run clean",
+    "prepublishOnly": "npm run build && npm run typecheck"
   },
   "files": [
     "dist"
@@ -26,6 +32,17 @@
   ],
   "engines": {
     "node": ">=18.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    }
   },
   "repository": {
     "type": "git",
