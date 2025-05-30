@@ -5,6 +5,7 @@
 - **エコノミーAPIはv2のみを利用する** - レガシーv1 APIは使用しない
 - **ソースコード修正後は必ずビルドしてdistを更新する** - `npm run build`を実行
 - **ルールの追加は必ずCLAUDE.mdに追記する**
+- **CHANGELOG.mdは英語で記載する**
 
 ## 概要
 AIアシスタントがPlayFabサービスと対話できるようにするModel Context Protocol (MCP)サーバーです。

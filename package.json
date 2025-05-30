@@ -1,6 +1,6 @@
 {
   "name": "@akiojin/playfab-mcp-server",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "PlayFab MCP Server",
   "license": "MIT",
   "author": "akiojin",
@@ -10,6 +10,7 @@
   },
   "scripts": {
     "build": "tsc && shx chmod +x dist/*.js",
+    "clean": "shx rm -rf dist",
     "prepare": "npm run build",
     "watch": "tsc --watch",
     "start": "node dist/index.js"
