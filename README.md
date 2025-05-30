@@ -317,7 +317,7 @@ Please check if your issue has already been reported by searching existing issue
 
 ## Changelog
 
-## [0.3.3] - 2025-05-30
+## [0.4.0] - 2025-05-30
 
 ### Added
 - Automated dependency management with Dependabot auto-merge for patch updates
