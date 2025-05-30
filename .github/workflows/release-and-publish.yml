@@ -66,7 +66,7 @@ jobs:
         fi
 
     - name: Create GitHub Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         body_path: release_notes.md
         draft: false
@@ -89,7 +89,7 @@ jobs:
         echo "package_file=$PACKAGE_FILE" >> $GITHUB_ENV
 
     - name: Attach package to release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         files: ${{ env.package_file }}
       env:
