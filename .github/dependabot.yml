@@ -21,6 +21,13 @@ updates:
       include: "scope"
     pull-request-branch-name:
       separator: "-"
+    # Group patch updates together
+    groups:
+      patch-updates:
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
     
   # Enable security updates for npm
   - package-ecosystem: "npm"

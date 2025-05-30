@@ -17,7 +17,8 @@
       "Bash(mkdir:*)",
       "Bash(rm:*)",
       "mcp__filesystem__read_multiple_files",
-      "Bash(chmod:*)"
+      "Bash(chmod:*)",
+      "Bash(gh api:*)"
     ]
   },
   "enableAllProjectMcpServers": false

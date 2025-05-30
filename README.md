@@ -227,6 +227,12 @@ When a `v*` tag is pushed, the `release-and-publish.yml` workflow automatically:
 #### Prerequisites
 
 - `NPM_TOKEN` secret must be set in repository settings
+- Branch protection rules must be configured for auto-merge to work:
+  1. Go to Settings → Branches
+  2. Add rule for `main` branch
+  3. Enable "Require a pull request before merging"
+  4. Enable "Require status checks to pass before merging"
+  5. Add required status checks: `build (18.x)`, `build (20.x)`, `build (22.x)`
 
 ### Development Setup
 
