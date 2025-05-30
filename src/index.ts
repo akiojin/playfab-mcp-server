@@ -227,8 +227,8 @@ const DELETE_INVENTORY_ITEMS_TOOL: Tool = {
   name: "delete_inventory_items",
   description:
     "Deletes items from a player's inventory. " +
-    "You must specify the Item (InventoryItemReference object) and TitlePlayerAccountId. " +
-    "Warning: This permanently removes items from the player's inventory.",
+    "⚠️ DESTRUCTIVE: This permanently removes items from the player's inventory. " +
+    "You must specify the Item (InventoryItemReference object) and TitlePlayerAccountId.",
   inputSchema: {
     type: "object",
     properties: {
@@ -247,11 +247,16 @@ const DELETE_INVENTORY_ITEMS_TOOL: Tool = {
       IdempotencyId: {
         type: "string",
         description: "A unique string to prevent duplicate requests. Use a UUID."
+      },
+      ConfirmDeletion: {
+        type: "boolean",
+        description: "Must be set to true to confirm deletion from player inventory. This is a safety measure."
       }
     },
     required: [
       "TitlePlayerAccountId",
-      "Item"
+      "Item",
+      "ConfirmDeletion"
     ],
   },
 }
@@ -404,6 +409,7 @@ const BAN_USERS_TOOL: Tool = {
   name: "ban_users",
   description:
     "Bans players from accessing the game. Use when: 1) Player violates terms, 2) Suspicious activity detected, 3) Temporary suspension needed. " +
+    "⚠️ DESTRUCTIVE: Prevents players from accessing the game. " +
     "Can ban by: PlayFabId (specific player), IPAddress (block IP), MACAddress (block device). " +
     "Set DurationInHours for temp bans, omit for permanent. Always include clear Reason for records.",
   inputSchema: {
@@ -418,13 +424,18 @@ const BAN_USERS_TOOL: Tool = {
             PlayFabId: { type: "string", description: "PlayFab ID to ban" },
             IPAddress: { type: "string", description: "IP address to ban" },
             MACAddress: { type: "string", description: "MAC address to ban" },
-            Reason: { type: "string", description: "Reason for the ban" },
+            Reason: { type: "string", description: "Reason for the ban (REQUIRED for audit trail)" },
             DurationInHours: { type: "number", description: "Ban duration in hours (optional, permanent if not specified)" }
-          }
+          },
+          required: ["Reason"]
         }
+      },
+      ConfirmBan: {
+        type: "boolean",
+        description: "Must be set to true to confirm the ban operation. This is a safety measure."
       }
     },
-    required: ["Bans"],
+    required: ["Bans", "ConfirmBan"],
   },
 }
 
@@ -767,16 +778,21 @@ const DELETE_ITEM_TOOL: Tool = {
   name: "delete_item",
   description:
     "Permanently deletes an item from the catalog. " +
-    "WARNING: This cannot be undone! The item will be removed from all player inventories.",
+    "⚠️ DESTRUCTIVE: This cannot be undone! The item will be removed from all player inventories. " +
+    "Requires explicit confirmation to proceed.",
   inputSchema: {
     type: "object",
     properties: {
       ItemId: {
         type: "string",
         description: "The ID of the item to delete"
+      },
+      ConfirmDeletion: {
+        type: "boolean",
+        description: "Must be set to true to confirm the deletion. This is a safety measure to prevent accidental deletions."
       }
     },
-    required: ["ItemId"],
+    required: ["ItemId", "ConfirmDeletion"],
   },
 }
 
@@ -1017,6 +1033,12 @@ async function AddInventoryItems(params: any) {
 
 async function DeleteInventoryItems(params: any) {
   return new Promise((resolve, reject) => {
+    // Validate confirmation
+    if (!params.ConfirmDeletion || params.ConfirmDeletion !== true) {
+      reject("Error: Deletion confirmation required. Set ConfirmDeletion to true to proceed with removing items from player inventory.")
+      return
+    }
+    
     PlayFabEconomyAPI.DeleteInventoryItems({
       CollectionId: params.CollectionId,
       Entity: {
@@ -1036,6 +1058,7 @@ async function DeleteInventoryItems(params: any) {
         eTag: result.data.ETag,
         idempotencyId: result.data.IdempotencyId,
         transactionIds: result.data.TransactionIds,
+        message: `Items permanently deleted from player ${params.TitlePlayerAccountId}'s inventory.`
       })
     })
   })
@@ -1122,6 +1145,18 @@ async function ExecuteInventoryOperations(params: any) {
 
 async function BanUsers(params: any) {
   return new Promise((resolve, reject) => {
+    // Validate confirmation
+    if (!params.ConfirmBan || params.ConfirmBan !== true) {
+      reject("Error: Ban confirmation required. Set ConfirmBan to true to proceed with this operation.")
+      return
+    }
+    
+    // Validate all bans have reasons
+    if (!params.Bans || !params.Bans.every((ban: any) => ban.Reason && ban.Reason.trim() !== '')) {
+      reject("Error: All bans must include a reason for audit trail purposes.")
+      return
+    }
+    
     PlayFabAdminAPI.BanUsers({
       Bans: params.Bans,
       CustomTags: { mcp: 'true' }
@@ -1133,6 +1168,7 @@ async function BanUsers(params: any) {
       resolve({
         success: true,
         banData: result.data.BanData,
+        message: `Successfully banned ${params.Bans.length} user(s).`
       })
     })
   })
@@ -1328,6 +1364,12 @@ async function UpdateDraftItem(params: any) {
 
 async function DeleteItem(params: any) {
   return new Promise((resolve, reject) => {
+    // Validate confirmation
+    if (!params.ConfirmDeletion || params.ConfirmDeletion !== true) {
+      reject("Error: Deletion confirmation required. Set ConfirmDeletion to true to proceed with this destructive operation.")
+      return
+    }
+    
     PlayFabEconomyAPI.DeleteItem({
       Id: params.ItemId,
       CustomTags: { mcp: 'true' }
@@ -1338,6 +1380,7 @@ async function DeleteItem(params: any) {
       }
       resolve({
         success: true,
+        message: `Item ${params.ItemId} has been permanently deleted from the catalog and all player inventories.`
       })
     })
   })
