@@ -127,10 +127,10 @@ const ADD_INVENTORY_ITEMS_TOOL: Tool = {
       Item: {
         type: "object",
         description: "The item to add, as an InventoryItemReference object. At minimum, specify the Id (item ID)." +
-        "StackId defaults to 'default', grouping items into the same stack; to create a separate stack for the same item ID, provide a unique StackId (e.g. a UUID)." +
+        "StackId determines how items stack: if not specified, uses the item's DefaultStackId. Same StackId = items stack together, different StackId = separate stacks." +
+        "Use a unique StackId (e.g., UUID) to force a new stack even for stackable items." +
         "AlternateId is for alternative item identifiers (e.g. external keys)." +
-        "Example: { 'Id': 'item_12345' } or { 'Id': 'item_12345', 'StackId': 'unique_stack_001' }." +
-        "See: https://learn.microsoft.com/ja-jp/rest/api/playfab/economy/inventory/add-inventory-items?view=playfab-rest#inventoryitemreference"
+        "Example: { 'Id': 'potion_health' } (uses DefaultStackId) or { 'Id': 'sword_rare', 'StackId': 'unique_001' } (custom stack)"
       },
       NewStackValues: {
         type: "object",
@@ -651,7 +651,7 @@ const CREATE_DRAFT_ITEM_TOOL: Tool = {
           },
           DefaultStackId: {
             type: "string",
-            description: "Default stack ID for inventory (static ID or '{guid}')"
+            description: "Default stack ID for inventory. Use static ID (e.g., 'default') to stack items together, or '{guid}' to keep each item separate. Example: consumables use 'default', equipment uses '{guid}'"
           },
           IsHidden: {
             type: "boolean",
