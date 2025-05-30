@@ -215,11 +215,18 @@ const GET_TITLE_PLAYER_ACCOUNT_IDS_FROM_PLAYFAB_IDS_TOOL: Tool = {
     type: "object",
     properties: {
       PlayFabIds: {
-        type: ["string", "array"],
-        description: "Single PlayFabId (string) or array of PlayFabIds to convert. Example: '276427AE27FF98AC' or ['id1', 'id2']",
-        items: {
-          type: "string"
-        }
+        oneOf: [
+          {
+            type: "string",
+            description: "Single PlayFabId to convert"
+          },
+          {
+            type: "array",
+            items: { type: "string" },
+            description: "Array of PlayFabIds to convert"
+          }
+        ],
+        description: "Single PlayFabId (string) or array of PlayFabIds to convert. Example: '276427AE27FF98AC' or ['id1', 'id2']"
       }
     },
     required: [ "PlayFabIds" ],
@@ -1126,9 +1133,7 @@ async function GetTitlePlayerAccountIdsFromPlayFabIds(params: any) {
           mappings: mappings,
           notFound: notFound,
           totalRequested: playFabIds.length,
-          totalFound: mappings.length,
-          // For backward compatibility with single ID requests
-          titlePlayerAccountId: mappings.length === 1 ? mappings[0].titlePlayerAccountId : undefined
+          totalFound: mappings.length
         })
       }
     )
@@ -1796,8 +1801,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           case "get_inventory_collection_ids":
             toolPromise = GetInventoryCollectionIds(args);
             break;
-          case "get_title_player_account_id_from_playfab_id":
-            toolPromise = GetTitlePlayerAccountIdFromPlayFabId(args);
+          case "get_title_player_account_ids_from_playfab_ids":
+            toolPromise = GetTitlePlayerAccountIdsFromPlayFabIds(args);
             break;
           case "delete_inventory_items":
             toolPromise = DeleteInventoryItems(args);
