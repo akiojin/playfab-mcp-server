@@ -31,6 +31,7 @@ Follow these steps to get started:
 - Retrieve comprehensive segment information.
 - Query player profiles within specified segments.
 - Convert a PlayFab ID to a Title Player Account ID via the get_title_player_account_id_from_playfab_id API.
+- Get detailed user account information with the get_user_account_info API.
 
 #### Inventory Management
 - **Get Operations:**
@@ -42,6 +43,26 @@ Follow these steps to get started:
   - Subtract specific amounts with the subtract_inventory_items API.
 - **Modify Operations:**
   - Update item properties with the update_inventory_items API.
+
+#### Economy v2 Administration
+- Grant items and currencies to players with the grant_items_to_users API.
+- Revoke items from players with the revoke_inventory_items API.
+- Execute batch inventory operations with the execute_inventory_operations API.
+- Note: In Economy v2, virtual currencies are managed as inventory items.
+
+#### User Account Administration
+- Ban players by ID, IP, or MAC address with the ban_users API.
+- Unban players completely with the revoke_all_bans_for_user API.
+
+#### Player Data Management
+- Retrieve player custom data with the get_user_data API.
+- Update player custom data with the update_user_data API.
+
+#### Title Configuration Management
+- Set global title data with the set_title_data API.
+- Retrieve title data with the get_title_data API.
+- Set server-only internal data with the set_title_internal_data API.
+- Retrieve internal data with the get_title_internal_data API.
 
 ## Quick Start 🚀
 
