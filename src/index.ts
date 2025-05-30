@@ -14,6 +14,7 @@ const PlayFabAdminAPI = pf.PlayFabAdmin as PlayFabAdminModule.IPlayFabAdmin
 const PlayFabAuthenticationAPI = pf.PlayFabAuthentication as PlayFabAuthenticationModule.IPlayFabAuthentication
 const PlayFabEconomyAPI = pf.PlayFabEconomy as PlayFabEconomyModule.IPlayFabEconomy
 const PlayFabProfileAPI = pf.PlayFabProfiles as PlayFabProfilesModule.IPlayFabProfiles
+const PlayFabServerAPI = pf.PlayFabServer as PlayFabServerModule.IPlayFabServer
 
 dotenv.config()
 
@@ -985,6 +986,75 @@ const GRANT_ITEMS_TO_USERS_TOOL: Tool = {
 }
 
 
+const ADD_LOCALIZED_NEWS_TOOL: Tool = {
+  name: "add_localized_news",
+  description:
+    "Creates news with multi-language support. Automatically handles the base news creation and localization. " +
+    "📰 Use for: Game updates, events, maintenance notices, special announcements. " +
+    "Creates base news in default language, then adds all specified translations. " +
+    "News items are displayed to players in their preferred language. " +
+    "⚠️ REQUIREMENT: PlayFab title must have a default language configured in Game Manager before using this tool.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      DefaultTitle: {
+        type: "string",
+        description: "The news title/headline in default language. Keep it concise and attention-grabbing."
+      },
+      DefaultBody: {
+        type: "string",
+        description: "The news content/body in default language. Can include details, instructions, or longer descriptions."
+      },
+      Timestamp: {
+        type: "string",
+        description: "When the news should be dated (ISO 8601 format). Defaults to current time if not specified."
+      },
+      Localizations: {
+        type: "array",
+        description: "Additional language versions of the news (optional for single-language news)",
+        items: {
+          type: "object",
+          properties: {
+            Language: {
+              type: "string",
+              description: "Language code (e.g., 'ja', 'es', 'fr', 'de')"
+            },
+            Title: {
+              type: "string",
+              description: "Localized title"
+            },
+            Body: {
+              type: "string",
+              description: "Localized body"
+            }
+          },
+          required: ["Language", "Title", "Body"]
+        }
+      }
+    },
+    required: ["DefaultTitle", "DefaultBody"],
+  },
+}
+
+const GET_TITLE_NEWS_TOOL: Tool = {
+  name: "get_title_news",
+  description:
+    "Retrieves current news items for the title. " +
+    "Returns all active news in chronological order. " +
+    "Use this to review existing news before adding new items.",
+  inputSchema: {
+    type: "object",
+    properties: {
+      Count: {
+        type: "number",
+        description: "Maximum number of news items to retrieve. Default: 10, Max: 100"
+      }
+    },
+  },
+}
+
+
+
 
 
 async function SearchItems(params: any) {
@@ -1717,6 +1787,104 @@ async function GrantItemsToUsers(params: any) {
 }
 
 
+async function AddLocalizedNews(params: any) {
+  return new Promise(async (resolve, reject) => {
+    try {
+      // First, create the news in the default language
+      const addNewsResult = await new Promise<any>((res, rej) => {
+        PlayFabAdminAPI.AddNews({
+          Title: params.DefaultTitle,
+          Body: params.DefaultBody,
+          Timestamp: params.Timestamp || new Date().toISOString(),
+          CustomTags: { mcp: 'true' }
+        }, (error, result) => {
+          if (error) {
+            rej(error)
+          } else {
+            res(result)
+          }
+        })
+      })
+      
+      const newsId = addNewsResult.data.NewsId
+      const localizations = params.Localizations || []
+      const localizationResults: Array<{
+        language: string
+        success: boolean
+        error?: any
+      }> = []
+      
+      // Add localizations if provided
+      for (const localization of localizations) {
+        try {
+          await new Promise<void>((res) => {
+            PlayFabAdminAPI.AddLocalizedNews({
+              NewsId: newsId,
+              Language: localization.Language,
+              Title: localization.Title,
+              Body: localization.Body,
+              CustomTags: { mcp: 'true' }
+            }, (error) => {
+              if (error) {
+                localizationResults.push({
+                  language: localization.Language,
+                  success: false,
+                  error: error
+                })
+                res() // Continue with other languages
+              } else {
+                localizationResults.push({
+                  language: localization.Language,
+                  success: true
+                })
+                res()
+              }
+            })
+          })
+        } catch (err) {
+          // Continue with other localizations
+        }
+      }
+      
+      resolve({
+        success: true,
+        newsId: newsId,
+        localizations: localizationResults,
+        message: `News item "${params.DefaultTitle}" has been successfully added with ${localizationResults.filter(r => r.success).length} localization(s).`
+      })
+    } catch (error: any) {
+      // Check for specific PlayFab errors
+      if (error && error.errorCode === 1393) {
+        reject("PlayFab Error: Default language not configured. Please set a default language in PlayFab Game Manager under 'Settings > General' before creating news items with localization.")
+      } else if (error && error.errorMessage) {
+        reject(`PlayFab Error: ${error.errorMessage} (Code: ${error.errorCode || 'Unknown'})`)
+      } else {
+        reject(JSON.stringify(error, null, 2))
+      }
+    }
+  })
+}
+
+async function GetTitleNews(params: any) {
+  return new Promise((resolve, reject) => {
+    PlayFabServerAPI.GetTitleNews({
+      Count: params.Count || 10
+    }, (error, result) => {
+      if (error) {
+        reject(JSON.stringify(error, null, 2))
+        return
+      }
+      resolve({
+        success: true,
+        news: result.data.News,
+        totalCount: result.data.News?.length || 0
+      })
+    })
+  })
+}
+
+
+
 
 
 const server = new Server(
@@ -1762,6 +1930,8 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     GET_CATALOG_CONFIG_TOOL,
     BATCH_CREATE_DRAFT_ITEMS_TOOL,
     GRANT_ITEMS_TO_USERS_TOOL,
+    ADD_LOCALIZED_NEWS_TOOL,
+    GET_TITLE_NEWS_TOOL,
   ],
 }))
 
@@ -1869,6 +2039,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             break;
           case "grant_items_to_users":
             toolPromise = GrantItemsToUsers(args);
+            break;
+          case "add_localized_news":
+            toolPromise = AddLocalizedNews(args);
+            break;
+          case "get_title_news":
+            toolPromise = GetTitleNews(args);
             break;
           default:
             reject({
