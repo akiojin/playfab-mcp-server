@@ -3,7 +3,8 @@
     "allow": [
       "WebFetch(domain:learn.microsoft.com)",
       "WebFetch(domain:github.com)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(npx tsc:*)"
     ]
   },
   "enableAllProjectMcpServers": false
