@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+- Consolidated news management tools for better usability
+  - Removed `add_news` tool in favor of unified `add_localized_news` tool
+  - Enhanced `add_localized_news` to automatically handle base news creation and localization in a single operation
+  - Improved error handling with specific guidance for PlayFab configuration requirements
+- Enhanced error messages for PlayFab API errors
+  - Added specific error handling for default language configuration issues (error code 1393)
+  - Provides clear guidance on PlayFab Game Manager configuration requirements
+
+### Removed
+- `add_news` tool (functionality merged into `add_localized_news`)
+
 ## [0.5.0] - 2024-12-19
 
 ### Added
