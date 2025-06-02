@@ -217,8 +217,3 @@ export async function runServer() {
   await server.connect(transport)
   console.error("PlayFab Server running on stdio")
 }
-
-runServer().catch((error) => {
-  console.error("Fatal error running server:", error)
-  process.exit(1)
-})

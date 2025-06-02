@@ -40,6 +40,8 @@ export function validateEnvironment(): RequiredEnvVars {
     missingVars.push('PLAYFAB_TITLE_ID')
   } else if (titleId.trim().length === 0) {
     invalidVars.push('PLAYFAB_TITLE_ID (cannot be empty)')
+  } else if (!/^[A-F0-9]{5}$/.test(titleId.trim())) {
+    invalidVars.push('PLAYFAB_TITLE_ID (must be 5 hexadecimal characters)')
   }
   
   // Check PLAYFAB_DEV_SECRET_KEY
@@ -48,6 +50,8 @@ export function validateEnvironment(): RequiredEnvVars {
     missingVars.push('PLAYFAB_DEV_SECRET_KEY')
   } else if (secretKey.trim().length === 0) {
     invalidVars.push('PLAYFAB_DEV_SECRET_KEY (cannot be empty)')
+  } else if (secretKey.trim().length < 32) {
+    invalidVars.push('PLAYFAB_DEV_SECRET_KEY (must be at least 32 characters)')
   }
   
   // Throw error if any validation failed

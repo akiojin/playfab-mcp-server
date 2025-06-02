@@ -19,6 +19,7 @@
 - **ビルドエラーは必ず排除する** - TypeScriptコンパイルエラーを放置しない
 - **何か更新された場合は、関連するドキュメントを必ず更新する**
 - **作業内容はCLAUDE.mdにToDoとしてチェックボックスで残す** - 作業完了時にはCLAUDE.mdを更新する
+- **作業開始前に進行中タスクに追加・更新する** - 新しい作業を始める前に必ずCLAUDE.mdの進行中タスクを更新
 - **「バージョンアップして」と指示があった場合**:
   1. `git status`でコミットされていない変更がないか確認（変更がある場合はエラー）
   2. 前回のバージョンアップからの差分をCHANGELOG.mdに追加
@@ -238,7 +239,23 @@ PlayFab APIには呼び出し制限があり、制限を超えるとスロット
 
 ### 進行中タスク
 
+- [x] **コードのモジュラー化とリファクタリング**（基本構造完了）
+  - [x] server.tsの重複実行を削除（221-224行目のrunServer()呼び出しを削除済み）
+  - [x] 必要な依存ファイルの作成
+    - [x] src/config/playfab.ts - PlayFab API設定ファイル（既存）
+    - [x] src/utils/errors.ts - エラーハンドリングユーティリティ（既存）
+    - [x] src/utils/env-validator.ts - 環境変数検証（既存）
+  - [x] handlersディレクトリ構造の実装（基本構造作成済み）
+  - [ ] toolsディレクトリとhandlersディレクトリの統合（将来の改善項目）
+  - [x] PlayFab APIラッパー（playfab-wrapper.ts）の実装
+  - [x] 環境変数の検証強化（TitleIDとSecretKeyのフォーマット検証）
+    - TitleID: 5文字の16進数形式（/^[A-F0-9]{5}$/）
+    - SecretKey: 最小32文字
+  - [x] 不要な一時ファイルの削除
+    - [x] refactor-script.js, refactor-script.ts, refactor.cjs
+    - [x] src/index.ts.backup
+    - [x] scripts/migrate-tools.ts
+
 - [ ] **改善タスク一覧の実装**
-  - [ ] 🚨 server.tsの重複実行を削除
   - [ ] 🚨 環境変数の検証強化
   - [ ] 🚨 SECURITY.mdのセキュリティ連絡先を追加

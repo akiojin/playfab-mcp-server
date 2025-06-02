@@ -28,7 +28,16 @@
       "Bash(/Users/akio-jinsenji/.nodebrew/node/v20.9.0/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg -A 20 \"CreateDraftItem\" PlayFabEconomy.js)",
       "Bash(grep:*)",
       "mcp__ide__getDiagnostics",
-      "Bash(npx markdownlint:*)"
+      "Bash(npx markdownlint:*)",
+      "Bash(npx ts-node:*)",
+      "Bash(node:*)",
+      "Bash(git push:*)",
+      "Bash(mv:*)",
+      "WebFetch(domain:docs.github.com)",
+      "Bash(/Users/akio-jinsenji/.nodebrew/node/v20.9.0/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg \"any\" /Users/akio-jinsenji/Workbench/akiojin/playfab-mcp-server/src --type ts -n)",
+      "Bash(/Users/akio-jinsenji/.nodebrew/node/v20.9.0/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg \"TODO|FIXME|XXX|HACK\" /Users/akio-jinsenji/Workbench/akiojin/playfab-mcp-server/src --type ts -n)",
+      "Bash(git restore:*)",
+      "Bash(touch:*)"
     ]
   },
   "enableAllProjectMcpServers": false
