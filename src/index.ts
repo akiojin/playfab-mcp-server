@@ -100,7 +100,8 @@ const ADD_INVENTORY_ITEMS_TOOL: Tool = {
   description:
     "⚠️ DEPRECATED: Use grant_items_to_users instead (works for single player too). " +
     "Grants items or virtual currency to a player's inventory. " +
-    "Note: In Economy v2, virtual currencies are items - use their item IDs, not currency codes.",
+    "Note: In Economy v2, virtual currencies are items - use their item IDs, not currency codes. " +
+    "⚠️ RATE LIMIT: 100 requests per 60 seconds per player entity.",
   inputSchema: {
     type: "object",
     properties: {
@@ -149,7 +150,8 @@ const GET_INVENTORY_ITEMS_TOOL: Tool = {
   description:
     "Retrieves the current inventory items for a specific player." +
     "You must provide the TitlePlayerAccountId." +
-    "You can optionally specify a collection (CollectionId), a page size (Count), and a ContinuationToken for pagination.",
+    "You can optionally specify a collection (CollectionId), a page size (Count), and a ContinuationToken for pagination. " +
+    "⚠️ RATE LIMIT: 100 requests per 60 seconds per player entity.",
   inputSchema: {
     type: "object",
     properties: {
@@ -239,7 +241,8 @@ const DELETE_INVENTORY_ITEMS_TOOL: Tool = {
   description:
     "Deletes items from a player's inventory. " +
     "⚠️ DESTRUCTIVE: This permanently removes items from the player's inventory. " +
-    "You must specify the Item (InventoryItemReference object) and TitlePlayerAccountId.",
+    "You must specify the Item (InventoryItemReference object) and TitlePlayerAccountId. " +
+    "⚠️ RATE LIMIT: 100 requests per 60 seconds per player entity.",
   inputSchema: {
     type: "object",
     properties: {
@@ -276,7 +279,8 @@ const SUBTRACT_INVENTORY_ITEMS_TOOL: Tool = {
   name: "subtract_inventory_items",
   description:
     "Subtracts a specific amount of items from a player's inventory. " +
-    "Use this to reduce item quantities without completely removing them.",
+    "Use this to reduce item quantities without completely removing them. " +
+    "⚠️ RATE LIMIT: 100 requests per 60 seconds per player entity.",
   inputSchema: {
     type: "object",
     properties: {
@@ -317,7 +321,8 @@ const UPDATE_INVENTORY_ITEMS_TOOL: Tool = {
   name: "update_inventory_items",
   description:
     "Updates properties of existing inventory items. " +
-    "Use this to modify item metadata, display properties, or custom data.",
+    "Use this to modify item metadata, display properties, or custom data. " +
+    "⚠️ RATE LIMIT: 100 requests per 60 seconds per player entity.",
   inputSchema: {
     type: "object",
     properties: {
@@ -352,7 +357,8 @@ const EXECUTE_INVENTORY_OPERATIONS_TOOL: Tool = {
     "Execute multiple inventory operations in a single batch request. " +
     "⚡ BULK OPERATION: Process up to 50 operations atomically (all succeed or all fail). " +
     "Perfect for: Complex inventory updates, item exchanges, bulk modifications. " +
-    "Supports: Add, Delete, Subtract, Update operations in any combination.",
+    "Supports: Add, Delete, Subtract, Update operations in any combination. " +
+    "⚠️ RATE LIMIT: 60 requests per 90 seconds per player entity.",
   inputSchema: {
     type: "object",
     properties: {
@@ -930,7 +936,8 @@ const GRANT_ITEMS_TO_USERS_TOOL: Tool = {
     "Grants items to one or more players. Works for both single and bulk operations. " +
     "⚡ RECOMMENDED: Use this for all item granting (single or multiple players). " +
     "Supports patterns: 1) Items to single player, 2) Same items to many players, 3) Different items to different players. " +
-    "For complex single-player operations (mix of add/delete/update), use execute_inventory_operations.",
+    "For complex single-player operations (mix of add/delete/update), use execute_inventory_operations. " +
+    "⚠️ RATE LIMIT: Individual AddInventoryItems calls are subject to 100 requests per 60 seconds per player.",
   inputSchema: {
     type: "object",
     properties: {

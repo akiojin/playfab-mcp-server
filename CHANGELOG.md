@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+
 - Consolidated news management tools for better usability
   - Removed `add_news` tool in favor of unified `add_localized_news` tool
   - Enhanced `add_localized_news` to automatically handle base news creation and localization in a single operation
@@ -17,11 +18,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Provides clear guidance on PlayFab Game Manager configuration requirements
 
 ### Removed
+
 - `add_news` tool (functionality merged into `add_localized_news`)
 
 ## [0.5.0] - 2024-12-19
 
 ### Added
+
 - Batch operations support for catalog items and inventory management
   - `batch_create_draft_items`: Create multiple catalog items in a single operation (up to 50 items)
   - `grant_items_to_users`: Grant items to multiple players in bulk (up to 100 operations)
@@ -37,7 +40,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added confirmation requirements for `delete_item`, `ban_users`, and `delete_inventory_items`
   - Clear warning messages and safety measures to prevent accidental data loss
 
-### Changed
+### Enhanced
+
 - Improved tool descriptions with clear categorization (⚡ BULK OPERATION, ⚠️ DESTRUCTIVE, etc.)
 - Enhanced `create_draft_item` to enforce NEUTRAL locale requirement for titles
 - Updated `execute_inventory_operations` description to highlight bulk operation capabilities
@@ -46,6 +50,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `add_inventory_items` → Use `grant_items_to_users` instead
 
 ### Fixed
+
 - Fixed TypeScript compilation errors
 - Corrected JSON Schema definitions for tools accepting multiple types
 

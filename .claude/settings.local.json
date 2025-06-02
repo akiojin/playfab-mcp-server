@@ -26,7 +26,9 @@
       "Bash(/Users/akio-jinsenji/.nodebrew/node/v20.9.0/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg \"exports\\.[A-Z]\" PlayFabEconomy.js)",
       "Bash(/Users/akio-jinsenji/.nodebrew/node/v20.9.0/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg -A 20 \"UpdateDraftItem\" PlayFabEconomy.js)",
       "Bash(/Users/akio-jinsenji/.nodebrew/node/v20.9.0/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg -A 20 \"CreateDraftItem\" PlayFabEconomy.js)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(npx markdownlint:*)"
     ]
   },
   "enableAllProjectMcpServers": false

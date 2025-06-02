@@ -1,4 +1,5 @@
 # PlayFab MCP Server
+
 [![smithery badge](https://smithery.ai/badge/@akiojin/playfab-mcp-server)](https://smithery.ai/server/@akiojin/playfab-mcp-server)
 
 ## What Is This? 🤔
@@ -25,6 +26,7 @@ Follow these steps to get started:
 ### What Can It Do? 📊
 
 #### Catalog & Search
+
 - Search for items using PlayFab's search_items API.
 - **Catalog Management (Economy v2):**
   - Create new draft items with the create_draft_item API.
@@ -34,12 +36,14 @@ Follow these steps to get started:
   - Get detailed item information with the get_item API.
 
 #### Player Management
+
 - Retrieve comprehensive segment information.
 - Query player profiles within specified segments.
 - Convert a PlayFab ID to a Title Player Account ID via the get_title_player_account_id_from_playfab_id API.
 - Get detailed user account information with the get_user_account_info API.
 
 #### Inventory Management
+
 - **Get Operations:**
   - Retrieve current inventory items with the get_inventory_items API.
   - Fetch inventory collection IDs using the get_inventory_collection_ids API.
@@ -51,23 +55,26 @@ Follow these steps to get started:
   - Update item properties with the update_inventory_items API.
 
 #### Economy v2 Administration
+
 - Execute batch inventory operations with the execute_inventory_operations API.
 - Note: In Economy v2, virtual currencies are managed as inventory items.
 
 #### User Account Administration
+
 - Ban players by ID, IP, or MAC address with the ban_users API.
 - Unban players completely with the revoke_all_bans_for_user API.
 
 #### Player Data Management
+
 - Retrieve player custom data with the get_user_data API.
 - Update player custom data with the update_user_data API.
 
 #### Title Configuration Management
+
 - Set global title data with the set_title_data API.
 - Retrieve title data with the get_title_data API.
 - Set server-only internal data with the set_title_internal_data API.
 - Retrieve internal data with the get_title_internal_data API.
-
 
 ## Quick Start 🚀
 
@@ -89,14 +96,15 @@ npx -y @smithery/cli install @akiojin/playfab-mcp-server --client claude
 
 Obtain your PlayFab Title ID and Developer Secret Key from the PlayFab Game Manager, then create a `.env` file in the project root with the following content (replace the placeholders with your actual credentials):
 
-```env
+```bash
 PLAYFAB_TITLE_ID=
 PLAYFAB_DEV_SECRET_KEY=
 ```
 
-### Getting Started
+### Installation and Setup
 
 1. **Install Dependencies**
+
    In the project root, run the following command to install all necessary dependencies:
 
    ```bash
@@ -104,6 +112,7 @@ PLAYFAB_DEV_SECRET_KEY=
    ```
 
 2. **Build the Project**
+
    Compile the project by executing:
 
    ```bash
@@ -111,6 +120,7 @@ PLAYFAB_DEV_SECRET_KEY=
    ```
 
 3. **Start the Server**
+
    Start the server by executing:
 
    ```bash
@@ -118,6 +128,7 @@ PLAYFAB_DEV_SECRET_KEY=
    ```
 
 4. **Confirmation Message**
+
    Upon startup, you should see this message:
 
    ```text
@@ -166,7 +177,7 @@ This project follows [Conventional Commits](https://www.conventionalcommits.org/
 
 #### Commit Message Format
 
-```
+```text
 <type>(<scope>): <subject>
 
 <body>
@@ -190,10 +201,8 @@ This project follows [Conventional Commits](https://www.conventionalcommits.org/
 - **MAJOR** version: When commit message contains `BREAKING CHANGE` in footer or `!` after type/scope
   - Example: `feat!: remove deprecated API endpoints`
   - Example: `feat: new API\n\nBREAKING CHANGE: removed old endpoints`
-
 - **MINOR** version: When commit type is `feat`
   - Example: `feat: add new PlayFab API integration`
-
 - **PATCH** version: When commit type is `fix`
   - Example: `fix: correct error handling in API calls`
 
@@ -220,11 +229,12 @@ git push origin --tags
 #### 3. Automatic Release & Publish
 
 When a `v*` tag is pushed, the `release-and-publish.yml` workflow automatically:
+
 - Creates a GitHub Release with release notes
 - Publishes the package to npm
 - Attaches release assets
 
-#### Prerequisites
+#### Repository Prerequisites
 
 - `NPM_TOKEN` secret must be set in repository settings
 - Branch protection rules must be configured for auto-merge to work:
@@ -252,7 +262,6 @@ npm run typecheck
 # Run tests
 npm test
 ```
-
 
 ## Security
 
@@ -314,7 +323,6 @@ Please check if your issue has already been reported by searching existing issue
 - General PlayFab API questions (please refer to [PlayFab Documentation](https://docs.microsoft.com/gaming/playfab/))
 - Issues with third-party tools or services
 - Custom implementation requests
-
 
 ## License
 
