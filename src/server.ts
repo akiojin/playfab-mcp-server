@@ -28,6 +28,52 @@ import * as catalogHandlers from "./handlers/catalog/index.js";
 import * as inventoryHandlers from "./handlers/inventory/index.js";
 import * as playerHandlers from "./handlers/player/index.js";
 import * as titleHandlers from "./handlers/title/index.js";
+import { createLogger, logToolCall, PerformanceLogger } from "./utils/logger.js";
+import { router } from "./utils/router.js";
+
+const logger = createLogger('server');
+
+// Register all handlers
+router.registerBatch({
+  // Catalog handlers
+  'search_items': catalogHandlers.SearchItems,
+  'create_draft_item': catalogHandlers.CreateDraftItem,
+  'update_draft_item': catalogHandlers.UpdateDraftItem,
+  'delete_item': catalogHandlers.DeleteItem,
+  'publish_draft_item': catalogHandlers.PublishDraftItem,
+  'get_item': catalogHandlers.GetItem,
+  'update_catalog_config': catalogHandlers.UpdateCatalogConfig,
+  'get_catalog_config': catalogHandlers.GetCatalogConfig,
+  'batch_create_draft_items': catalogHandlers.BatchCreateDraftItems,
+  
+  // Inventory handlers
+  'add_inventory_items': inventoryHandlers.AddInventoryItems,
+  'get_inventory_items': inventoryHandlers.GetInventoryItems,
+  'get_inventory_collection_ids': inventoryHandlers.GetInventoryCollectionIds,
+  'delete_inventory_items': inventoryHandlers.DeleteInventoryItems,
+  'subtract_inventory_items': inventoryHandlers.SubtractInventoryItems,
+  'update_inventory_items': inventoryHandlers.UpdateInventoryItems,
+  'execute_inventory_operations': inventoryHandlers.ExecuteInventoryOperations,
+  'grant_items_to_users': inventoryHandlers.GrantItemsToUsers,
+  
+  // Player handlers
+  'get_title_player_account_ids': playerHandlers.GetTitlePlayerAccountIdsFromPlayFabIds,
+  'get_all_segments': playerHandlers.GetAllSegments,
+  'get_players_in_segments': playerHandlers.GetPlayersInSegments,
+  'ban_users': playerHandlers.BanUsers,
+  'revoke_all_bans_for_user': playerHandlers.RevokeAllBansForUser,
+  'get_user_account_info': playerHandlers.GetUserAccountInfo,
+  'get_user_data': playerHandlers.GetUserData,
+  'update_user_data': playerHandlers.UpdateUserData,
+  
+  // Title handlers
+  'get_title_data': titleHandlers.GetTitleData,
+  'set_title_data': titleHandlers.SetTitleData,
+  'get_title_internal_data': titleHandlers.GetTitleInternalData,
+  'set_title_internal_data': titleHandlers.SetTitleInternalData,
+  'get_title_news': titleHandlers.GetTitleNews,
+  'add_localized_news': titleHandlers.AddLocalizedNews,
+});
 
 export const server = new Server(
   {
@@ -79,6 +125,8 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   const { name, arguments: args } = request.params;
+  const perfLogger = new PerformanceLogger(`Tool call: ${name}`);
+  const startTime = Date.now();
 
   try {
     const result = await new Promise((resolve, reject) => {
@@ -93,127 +141,45 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           return;
         }
 
-        let toolPromise: Promise<any>;
-        switch (name) {
-          case "search_items":
-            toolPromise = catalogHandlers.SearchItems(args);
-            break;
-          case "create_draft_item":
-            toolPromise = catalogHandlers.CreateDraftItem(args);
-            break;
-          case "update_draft_item":
-            toolPromise = catalogHandlers.UpdateDraftItem(args);
-            break;
-          case "delete_item":
-            toolPromise = catalogHandlers.DeleteItem(args);
-            break;
-          case "publish_draft_item":
-            toolPromise = catalogHandlers.PublishDraftItem(args);
-            break;
-          case "get_item":
-            toolPromise = catalogHandlers.GetItem(args);
-            break;
-          case "update_catalog_config":
-            toolPromise = catalogHandlers.UpdateCatalogConfig(args);
-            break;
-          case "get_catalog_config":
-            toolPromise = catalogHandlers.GetCatalogConfig();
-            break;
-          case "batch_create_draft_items":
-            toolPromise = catalogHandlers.BatchCreateDraftItems(args);
-            break;
-          case "add_inventory_items":
-            toolPromise = inventoryHandlers.AddInventoryItems(args);
-            break;
-          case "get_inventory_items":
-            toolPromise = inventoryHandlers.GetInventoryItems(args);
-            break;
-          case "get_inventory_collection_ids":
-            toolPromise = inventoryHandlers.GetInventoryCollectionIds(args);
-            break;
-          case "delete_inventory_items":
-            toolPromise = inventoryHandlers.DeleteInventoryItems(args);
-            break;
-          case "subtract_inventory_items":
-            toolPromise = inventoryHandlers.SubtractInventoryItems(args);
-            break;
-          case "update_inventory_items":
-            toolPromise = inventoryHandlers.UpdateInventoryItems(args);
-            break;
-          case "execute_inventory_operations":
-            toolPromise = inventoryHandlers.ExecuteInventoryOperations(args);
-            break;
-          case "grant_items_to_users":
-            toolPromise = inventoryHandlers.GrantItemsToUsers(args);
-            break;
-          case "get_title_player_account_ids":
-            toolPromise = playerHandlers.GetTitlePlayerAccountIdsFromPlayFabIds(args);
-            break;
-          case "get_all_segments":
-            toolPromise = playerHandlers.GetAllSegments();
-            break;
-          case "get_players_in_segments":
-            toolPromise = playerHandlers.GetPlayersInSegments(args);
-            break;
-          case "ban_users":
-            toolPromise = playerHandlers.BanUsers(args);
-            break;
-          case "revoke_all_bans_for_user":
-            toolPromise = playerHandlers.RevokeAllBansForUser(args);
-            break;
-          case "get_user_account_info":
-            toolPromise = playerHandlers.GetUserAccountInfo(args);
-            break;
-          case "get_user_data":
-            toolPromise = playerHandlers.GetUserData(args);
-            break;
-          case "update_user_data":
-            toolPromise = playerHandlers.UpdateUserData(args);
-            break;
-          case "set_title_data":
-            toolPromise = titleHandlers.SetTitleData(args);
-            break;
-          case "get_title_data":
-            toolPromise = titleHandlers.GetTitleData(args);
-            break;
-          case "set_title_internal_data":
-            toolPromise = titleHandlers.SetTitleInternalData(args);
-            break;
-          case "get_title_internal_data":
-            toolPromise = titleHandlers.GetTitleInternalData(args);
-            break;
-          case "add_localized_news":
-            toolPromise = titleHandlers.AddLocalizedNews(args);
-            break;
-          case "get_title_news":
-            toolPromise = titleHandlers.GetTitleNews(args);
-            break;
-          default:
-            reject({
-              content: [{ type: "text", text: `Unknown tool: ${name}` }],
-              isError: true,
-            });
-            return;
+        // Check if handler exists
+        if (!router.has(name)) {
+          reject(new Error(`Unknown tool: ${name}`));
+          return;
         }
-        toolPromise
+
+        // Execute handler using router
+        router.execute(name, args)
           .then(toolResult => resolve(toolResult))
           .catch(toolError => reject(toolError));
       })
     })
 
+    const duration = Date.now() - startTime;
+    logToolCall(name, args, result, duration);
+    perfLogger.end({ tool: name });
+
     return {
       content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
     }
   } catch (error) {
+    const duration = Date.now() - startTime;
+    logToolCall(name, args, null, duration, error);
+    perfLogger.error(error, { tool: name });
+    
+    const isDevelopment = process.env['NODE_ENV'] !== 'production'
+    const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred'
+    const errorDetails = isDevelopment && error instanceof Error ? `\n${error.stack}` : ''
+    
     return {
-      content: [{ type: "text", text: `Error occurred: ${error}` }],
+      content: [{ type: "text", text: `Error occurred: ${errorMessage}${errorDetails}` }],
       isError: true,
     }
   }
 })
 
 export async function runServer() {
+  logger.info('Starting PlayFab MCP Server...')
   const transport = new StdioServerTransport()
   await server.connect(transport)
-  console.error("PlayFab Server running on stdio")
+  logger.info('PlayFab MCP Server running on stdio')
 }

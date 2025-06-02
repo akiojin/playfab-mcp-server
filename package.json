@@ -62,6 +62,8 @@
     "@types/dotenv": "^8.2.3",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.15.26",
+    "@types/pino": "^7.0.4",
+    "@types/pino-pretty": "^4.7.5",
     "@typescript-eslint/eslint-plugin": "^8.33.0",
     "@typescript-eslint/parser": "^8.33.0",
     "eslint": "^9.28.0",
@@ -77,6 +79,8 @@
     "@modelcontextprotocol/sdk": "^1.10.2",
     "@vercel/ncc": "^0.38.3",
     "dotenv": "^16.5.0",
+    "pino": "^9.7.0",
+    "pino-pretty": "^13.0.0",
     "playfab-sdk": "^2.172.250428"
   },
   "type": "module",

@@ -1,31 +1,30 @@
-import * as pf from "playfab-sdk";
-const PlayFabEconomyAPI = pf.PlayFabEconomy as PlayFabEconomyModule.IPlayFabEconomy;
+import { PlayFabEconomyAPI } from "../../config/playfab.js";
+import { callPlayFabApi, addCustomTags } from "../../utils/playfab-wrapper.js";
 
 export async function SubtractInventoryItems(params: any) {
-  return new Promise((resolve, reject) => {
-    PlayFabEconomyAPI.SubtractInventoryItems({
-      Amount: params.Amount,
-      CollectionId: params.CollectionId,
-      DurationInSeconds: params.DurationInSeconds,
-      Entity: {
-        Id: params.TitlePlayerAccountId,
-        Type: "title_player_account"
-      },
-      Item: params.Item,
-      IdempotencyId: params.IdempotencyId,
-      DeleteEmptyStacks: true,
-      CustomTags: { mcp: 'true' }
-    }, (error, result) => {
-      if (error) {
-        reject(JSON.stringify(error, null, 2))
-        return
-      }
-      resolve({
-        success: true,
-        eTag: result.data.ETag,
-        idempotencyId: result.data.IdempotencyId,
-        transactionIds: result.data.TransactionIds,
-      })
-    })
-  })
+  const request = addCustomTags({
+    Amount: params.Amount,
+    CollectionId: params.CollectionId,
+    DurationInSeconds: params.DurationInSeconds,
+    Entity: {
+      Id: params.TitlePlayerAccountId,
+      Type: "title_player_account"
+    },
+    Item: params.Item,
+    IdempotencyId: params.IdempotencyId,
+    DeleteEmptyStacks: true
+  });
+  
+  const result = await callPlayFabApi(
+    PlayFabEconomyAPI.SubtractInventoryItems,
+    request,
+    'SubtractInventoryItems'
+  );
+  
+  return {
+    success: true,
+    eTag: result.ETag,
+    idempotencyId: result.IdempotencyId,
+    transactionIds: result.TransactionIds,
+  };
 }

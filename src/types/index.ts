@@ -41,3 +41,6 @@ export interface ConfirmationRequired {
   ConfirmDeletion?: boolean
   ConfirmBan?: boolean
 }
+
+// Re-export all PlayFab response types
+export * from './playfab-responses.js'

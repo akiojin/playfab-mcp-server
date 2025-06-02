@@ -1,19 +1,17 @@
-import * as pf from "playfab-sdk";
-const PlayFabEconomyAPI = pf.PlayFabEconomy as PlayFabEconomyModule.IPlayFabEconomy;
+import { PlayFabEconomyAPI } from "../../config/playfab.js";
+import { callPlayFabApi, addCustomTags } from "../../utils/playfab-wrapper.js";
 
 export async function GetCatalogConfig() {
-  return new Promise((resolve, reject) => {
-    PlayFabEconomyAPI.GetCatalogConfig({
-      CustomTags: { mcp: 'true' }
-    }, (error, result) => {
-      if (error) {
-        reject(JSON.stringify(error, null, 2))
-        return
-      }
-      resolve({
-        success: true,
-        config: result.data.Config,
-      })
-    })
-  })
+  const request = addCustomTags({});
+  
+  const result = await callPlayFabApi(
+    PlayFabEconomyAPI.GetCatalogConfig,
+    request,
+    'GetCatalogConfig'
+  );
+  
+  return {
+    success: true,
+    config: result.Config,
+  };
 }

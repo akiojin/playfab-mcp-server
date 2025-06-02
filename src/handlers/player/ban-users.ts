@@ -1,33 +1,30 @@
-import * as pf from "playfab-sdk";
-const PlayFabAdminAPI = pf.PlayFabAdmin as PlayFabAdminModule.IPlayFabAdmin;
+import { PlayFabAdminAPI } from "../../config/playfab.js";
+import { callPlayFabApi, addCustomTags } from "../../utils/playfab-wrapper.js";
 
 export async function BanUsers(params: any) {
-  return new Promise((resolve, reject) => {
-    // Validate confirmation
-    if (!params.ConfirmBan || params.ConfirmBan !== true) {
-      reject("Error: Ban confirmation required. Set ConfirmBan to true to proceed with this operation.")
-      return
-    }
-    
-    // Validate all bans have reasons
-    if (!params.Bans || !params.Bans.every((ban: any) => ban.Reason && ban.Reason.trim() !== '')) {
-      reject("Error: All bans must include a reason for audit trail purposes.")
-      return
-    }
-    
-    PlayFabAdminAPI.BanUsers({
-      Bans: params.Bans,
-      CustomTags: { mcp: 'true' }
-    }, (error, result) => {
-      if (error) {
-        reject(JSON.stringify(error, null, 2))
-        return
-      }
-      resolve({
-        success: true,
-        banData: result.data.BanData,
-        message: `Successfully banned ${params.Bans.length} user(s).`
-      })
-    })
-  })
+  // Validate confirmation
+  if (!params.ConfirmBan || params.ConfirmBan !== true) {
+    throw new Error("Ban confirmation required. Set ConfirmBan to true to proceed with this operation.");
+  }
+  
+  // Validate all bans have reasons
+  if (!params.Bans || !params.Bans.every((ban: any) => ban.Reason && ban.Reason.trim() !== '')) {
+    throw new Error("All bans must include a reason for audit trail purposes.");
+  }
+  
+  const request = addCustomTags({
+    Bans: params.Bans
+  });
+  
+  const result = await callPlayFabApi(
+    PlayFabAdminAPI.BanUsers,
+    request,
+    'BanUsers'
+  );
+  
+  return {
+    success: true,
+    banData: result.BanData,
+    message: `Successfully banned ${params.Bans.length} user(s).`
+  };
 }

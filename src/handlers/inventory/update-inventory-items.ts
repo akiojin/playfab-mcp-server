@@ -1,28 +1,27 @@
-import * as pf from "playfab-sdk";
-const PlayFabEconomyAPI = pf.PlayFabEconomy as PlayFabEconomyModule.IPlayFabEconomy;
+import { PlayFabEconomyAPI } from "../../config/playfab.js";
+import { callPlayFabApi, addCustomTags } from "../../utils/playfab-wrapper.js";
 
 export async function UpdateInventoryItems(params: any) {
-  return new Promise((resolve, reject) => {
-    PlayFabEconomyAPI.UpdateInventoryItems({
-      CollectionId: params.CollectionId,
-      Entity: {
-        Id: params.TitlePlayerAccountId,
-        Type: "title_player_account"
-      },
-      Item: params.Item,
-      IdempotencyId: params.IdempotencyId,
-      CustomTags: { mcp: 'true' }
-    }, (error, result) => {
-      if (error) {
-        reject(JSON.stringify(error, null, 2))
-        return
-      }
-      resolve({
-        success: true,
-        eTag: result.data.ETag,
-        idempotencyId: result.data.IdempotencyId,
-        transactionIds: result.data.TransactionIds,
-      })
-    })
-  })
+  const request = addCustomTags({
+    CollectionId: params.CollectionId,
+    Entity: {
+      Id: params.TitlePlayerAccountId,
+      Type: "title_player_account"
+    },
+    Item: params.Item,
+    IdempotencyId: params.IdempotencyId
+  });
+  
+  const result = await callPlayFabApi(
+    PlayFabEconomyAPI.UpdateInventoryItems,
+    request,
+    'UpdateInventoryItems'
+  );
+  
+  return {
+    success: true,
+    eTag: result.ETag,
+    idempotencyId: result.IdempotencyId,
+    transactionIds: result.TransactionIds,
+  };
 }

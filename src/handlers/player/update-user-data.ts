@@ -1,22 +1,21 @@
-import * as pf from "playfab-sdk";
-const PlayFabAdminAPI = pf.PlayFabAdmin as PlayFabAdminModule.IPlayFabAdmin;
+import { PlayFabAdminAPI } from "../../config/playfab.js";
+import { callPlayFabApi, addCustomTags } from "../../utils/playfab-wrapper.js";
 
 export async function UpdateUserData(params: any) {
-  return new Promise((resolve, reject) => {
-    PlayFabAdminAPI.UpdateUserData({
-      PlayFabId: params.PlayFabId,
-      Data: params.Data,
-      Permission: params.Permission || "Private",
-      CustomTags: { mcp: 'true' }
-    }, (error, result) => {
-      if (error) {
-        reject(JSON.stringify(error, null, 2))
-        return
-      }
-      resolve({
-        success: true,
-        dataVersion: result.data.DataVersion,
-      })
-    })
-  })
+  const request = addCustomTags({
+    PlayFabId: params.PlayFabId,
+    Data: params.Data,
+    Permission: params.Permission || "Private"
+  });
+  
+  const result = await callPlayFabApi(
+    PlayFabAdminAPI.UpdateUserData,
+    request,
+    'UpdateUserData'
+  );
+  
+  return {
+    success: true,
+    dataVersion: result.DataVersion,
+  };
 }

@@ -64,25 +64,36 @@ export function formatErrorResponse(error: unknown): {
     details?: unknown
   }
 } {
+  const isDevelopment = process.env['NODE_ENV'] !== 'production'
+  
   if (error instanceof PlayFabMCPError) {
+    const details = isDevelopment ? error.details : undefined
+    
     return {
       success: false,
       error: {
         message: error.message,
         code: error.code,
         statusCode: error.statusCode,
-        details: error.details,
+        details,
       },
     }
   }
 
   if (error instanceof Error) {
+    // In production, only return safe error information
+    const details = isDevelopment ? {
+      name: error.name,
+      stack: error.stack,
+    } : undefined
+    
     return {
       success: false,
       error: {
         message: error.message,
         code: 'INTERNAL_ERROR',
         statusCode: 500,
+        details,
       },
     }
   }
@@ -93,7 +104,7 @@ export function formatErrorResponse(error: unknown): {
       message: 'An unknown error occurred',
       code: 'UNKNOWN_ERROR',
       statusCode: 500,
-      details: error,
+      details: isDevelopment ? error : undefined,
     },
   }
 }

@@ -1,21 +1,45 @@
-import * as pf from "playfab-sdk";
-const PlayFabEconomyAPI = pf.PlayFabEconomy as PlayFabEconomyModule.IPlayFabEconomy;
+import { PlayFabEconomyAPI } from "../../config/playfab.js";
+import { callPlayFabApi, addCustomTags } from "../../utils/playfab-wrapper.js";
+import { validateString, validateNumber, validatePaginationCount } from "../../utils/input-validator.js";
+
+interface SearchItemsParams {
+  Count: number;
+  ContinuationToken?: string;
+  Filter?: string;
+  OrderBy?: string;
+  Search?: string;
+}
 
 export async function SearchItems(params: any) {
-  return new Promise((resolve, reject) => {
-    PlayFabEconomyAPI.SearchItems({
-      ...params,
-      CustomTags: { mcp: 'true' }
-    }, (error, result) => {
-      if (error) {
-        reject(JSON.stringify(error, null, 2))
-      } else {
-        resolve({
-          success: true,
-          items: result.data.Items,
-          continuationToken: result.data.ContinuationToken
-        })
-      }
-    })
-  })
+  // Validate input parameters
+  const validatedParams: SearchItemsParams = {
+    Count: validatePaginationCount(params.Count, 'Count', 10, 50),
+  };
+
+  // Optional parameters
+  const continuationToken = validateString(params.ContinuationToken, 'ContinuationToken');
+  if (continuationToken) validatedParams.ContinuationToken = continuationToken;
+
+  const filter = validateString(params.Filter, 'Filter', { maxLength: 2048 });
+  if (filter) validatedParams.Filter = filter;
+
+  const orderBy = validateString(params.OrderBy, 'OrderBy', { maxLength: 2048 });
+  if (orderBy) validatedParams.OrderBy = orderBy;
+
+  const search = validateString(params.Search, 'Search', { maxLength: 2048 });
+  if (search) validatedParams.Search = search;
+
+  // Make API call with validated parameters
+  const request = addCustomTags(validatedParams);
+  const result = await callPlayFabApi(
+    PlayFabEconomyAPI.SearchItems,
+    request as any,
+    'SearchItems'
+  );
+  
+  return {
+    success: true,
+    items: result.Items,
+    continuationToken: result.ContinuationToken
+  };
 }

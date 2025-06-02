@@ -1,19 +1,19 @@
-import * as pf from "playfab-sdk";
-const PlayFabAdminAPI = pf.PlayFabAdmin as PlayFabAdminModule.IPlayFabAdmin;
+import { PlayFabAdminAPI } from "../../config/playfab.js";
+import { callPlayFabApi, addCustomTags } from "../../utils/playfab-wrapper.js";
 
 export async function SetTitleData(params: any) {
-  return new Promise((resolve, reject) => {
-    PlayFabAdminAPI.SetTitleData({
-      Key: params.Key,
-      Value: params.Value
-    }, (error) => {
-      if (error) {
-        reject(JSON.stringify(error, null, 2))
-        return
-      }
-      resolve({
-        success: true,
-      })
-    })
-  })
+  const request = addCustomTags({
+    Key: params.Key,
+    Value: params.Value
+  });
+  
+  await callPlayFabApi(
+    PlayFabAdminAPI.SetTitleData,
+    request,
+    'SetTitleData'
+  );
+  
+  return {
+    success: true,
+  };
 }

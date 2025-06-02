@@ -1,20 +1,20 @@
-import * as pf from "playfab-sdk";
-const PlayFabServerAPI = pf.PlayFabServer as PlayFabServerModule.IPlayFabServer;
+import { PlayFabServerAPI } from "../../config/playfab.js";
+import { callPlayFabApi, addCustomTags } from "../../utils/playfab-wrapper.js";
 
 export async function GetTitleNews(params: any) {
-  return new Promise((resolve, reject) => {
-    PlayFabServerAPI.GetTitleNews({
-      Count: params.Count || 10
-    }, (error, result) => {
-      if (error) {
-        reject(JSON.stringify(error, null, 2))
-        return
-      }
-      resolve({
-        success: true,
-        news: result.data.News,
-        totalCount: result.data.News?.length || 0
-      })
-    })
-  })
+  const request = addCustomTags({
+    Count: params.Count || 10
+  });
+  
+  const result = await callPlayFabApi(
+    PlayFabServerAPI.GetTitleNews,
+    request,
+    'GetTitleNews'
+  );
+  
+  return {
+    success: true,
+    news: result.News,
+    totalCount: result.News?.length || 0
+  };
 }

@@ -1,20 +1,19 @@
-import * as pf from "playfab-sdk";
-const PlayFabEconomyAPI = pf.PlayFabEconomy as PlayFabEconomyModule.IPlayFabEconomy;
+import { PlayFabEconomyAPI } from "../../config/playfab.js";
+import { callPlayFabApi, addCustomTags } from "../../utils/playfab-wrapper.js";
 
 export async function GetItem(params: any) {
-  return new Promise((resolve, reject) => {
-    PlayFabEconomyAPI.GetItem({
-      Id: params.ItemId,
-      CustomTags: { mcp: 'true' }
-    }, (error, result) => {
-      if (error) {
-        reject(JSON.stringify(error, null, 2))
-        return
-      }
-      resolve({
-        success: true,
-        item: result.data.Item,
-      })
-    })
-  })
+  const request = addCustomTags({
+    Id: params.ItemId
+  });
+  
+  const result = await callPlayFabApi(
+    PlayFabEconomyAPI.GetItem,
+    request,
+    'GetItem'
+  );
+  
+  return {
+    success: true,
+    item: result.Item,
+  };
 }

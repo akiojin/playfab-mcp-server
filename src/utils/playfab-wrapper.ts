@@ -3,6 +3,9 @@
  */
 import { PlayFabAuthenticationAPI } from '../config/playfab.js'
 import { wrapPlayFabError, RateLimitError } from './errors.js'
+import { logAPICall, createLogger } from './logger.js'
+
+const logger = createLogger('playfab-wrapper')
 
 export interface PlayFabApiCall<TRequest, TResponse> {
   (request: TRequest, callback: (error: any, result: { data: TResponse }) => void): void
@@ -19,9 +22,16 @@ export async function callPlayFabApi<TRequest, TResponse>(
   // First, ensure we have a valid entity token
   await ensureEntityToken()
   
+  const startTime = Date.now()
+  logger.debug({ method: methodName }, `Calling PlayFab API: ${methodName}`)
+  
   return new Promise((resolve, reject) => {
     apiMethod(request, (error, result) => {
+      const duration = Date.now() - startTime
+      
       if (error) {
+        logAPICall(methodName, request, null, duration, error)
+        
         // Check for rate limiting
         if (error.code === 429 || error.errorCode === 1117) {
           reject(new RateLimitError(
@@ -35,10 +45,13 @@ export async function callPlayFabApi<TRequest, TResponse>(
       }
       
       if (!result?.data) {
-        reject(new Error(`No data returned from ${methodName}`))
+        const noDataError = new Error(`No data returned from ${methodName}`)
+        logAPICall(methodName, request, null, duration, noDataError)
+        reject(noDataError)
         return
       }
       
+      logAPICall(methodName, request, result.data, duration)
       resolve(result.data)
     })
   })
@@ -95,16 +108,16 @@ async function fetchEntityToken(): Promise<void> {
 /**
  * Add custom tags to a request
  */
-export function addCustomTags<T extends { CustomTags?: any }>(
+export function addCustomTags<T>(
   request: T,
   tags: Record<string, string> = {}
-): T {
+): T & { CustomTags: Record<string, string> } {
   return {
     ...request,
     CustomTags: {
       mcp: 'true',
       ...tags,
-      ...(request.CustomTags || {})
+      ...((request as any).CustomTags || {})
     }
   }
 }

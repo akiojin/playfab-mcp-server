@@ -1,24 +1,23 @@
-import * as pf from "playfab-sdk";
-const PlayFabEconomyAPI = pf.PlayFabEconomy as PlayFabEconomyModule.IPlayFabEconomy;
+import { PlayFabEconomyAPI } from "../../config/playfab.js";
+import { callPlayFabApi, addCustomTags } from "../../utils/playfab-wrapper.js";
 
 export async function UpdateDraftItem(params: any) {
-  return new Promise((resolve, reject) => {
-    PlayFabEconomyAPI.UpdateDraftItem({
-      Item: {
-        Id: params.ItemId,
-        ...params.Item
-      },
-      Publish: params.Publish,
-      CustomTags: { mcp: 'true' }
-    }, (error, result) => {
-      if (error) {
-        reject(JSON.stringify(error, null, 2))
-        return
-      }
-      resolve({
-        success: true,
-        item: result.data.Item,
-      })
-    })
-  })
+  const request = addCustomTags({
+    Item: {
+      Id: params.ItemId,
+      ...params.Item
+    },
+    Publish: params.Publish
+  });
+  
+  const result = await callPlayFabApi(
+    PlayFabEconomyAPI.UpdateDraftItem,
+    request,
+    'UpdateDraftItem'
+  );
+  
+  return {
+    success: true,
+    item: result.Item,
+  };
 }

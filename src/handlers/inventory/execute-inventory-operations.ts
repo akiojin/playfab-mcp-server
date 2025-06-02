@@ -1,25 +1,24 @@
-import * as pf from "playfab-sdk";
-const PlayFabEconomyAPI = pf.PlayFabEconomy as PlayFabEconomyModule.IPlayFabEconomy;
+import { PlayFabEconomyAPI } from "../../config/playfab.js";
+import { callPlayFabApi, addCustomTags } from "../../utils/playfab-wrapper.js";
 
 export async function ExecuteInventoryOperations(params: any) {
-  return new Promise((resolve, reject) => {
-    PlayFabEconomyAPI.ExecuteInventoryOperations({
-      Operations: params.Operations,
-      Entity: params.Entity,
-      CollectionId: params.CollectionId,
-      IdempotencyId: params.IdempotencyId,
-      CustomTags: { mcp: 'true' }
-    }, (error, result) => {
-      if (error) {
-        reject(JSON.stringify(error, null, 2))
-        return
-      }
-      resolve({
-        success: true,
-        eTag: result.data.ETag,
-        idempotencyId: result.data.IdempotencyId,
-        transactionIds: result.data.TransactionIds,
-      })
-    })
-  })
+  const request = addCustomTags({
+    Operations: params.Operations,
+    Entity: params.Entity,
+    CollectionId: params.CollectionId,
+    IdempotencyId: params.IdempotencyId
+  });
+  
+  const result = await callPlayFabApi(
+    PlayFabEconomyAPI.ExecuteInventoryOperations,
+    request,
+    'ExecuteInventoryOperations'
+  );
+  
+  return {
+    success: true,
+    eTag: result.ETag,
+    idempotencyId: result.IdempotencyId,
+    transactionIds: result.TransactionIds,
+  };
 }

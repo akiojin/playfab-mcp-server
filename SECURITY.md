@@ -16,7 +16,10 @@ We take the security of our project seriously. If you have discovered a security
 ### Reporting Process
 
 1. **DO NOT** create a public GitHub issue for the vulnerability.
-2. Email your findings to security@your-domain.com (replace with actual security contact).
+2. Report security issues via GitHub's private vulnerability reporting:
+   - Go to the **Security** tab of this repository
+   - Click on **Report a vulnerability**
+   - Provide detailed information about the vulnerability
 3. Provide as much information as possible about the vulnerability:
    - Type of issue (e.g., buffer overflow, SQL injection, cross-site scripting, etc.)
    - Full paths of source file(s) related to the manifestation of the issue
@@ -103,8 +106,16 @@ Please ensure your usage also complies with these regulations.
 
 ## Contact
 
-For security concerns, please contact:
-- Email: [Add your security email]
-- GPG Key: [Add your GPG key if available]
+For security concerns:
+- **Primary**: Use GitHub's private vulnerability reporting feature (see "Reporting a Vulnerability" section above)
+- **Alternative**: Create an issue with the `security` label (for non-sensitive security discussions only)
 
 For general bugs and feature requests, please use the GitHub issue tracker.
+
+## Security Maintainers
+
+This project's security is maintained by:
+- Project maintainers via GitHub repository settings
+- Community contributors who report vulnerabilities responsibly
+
+If you need to verify the authenticity of security communications, please check that they come from repository maintainers with write access.
