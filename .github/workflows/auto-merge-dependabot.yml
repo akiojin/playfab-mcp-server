@@ -31,11 +31,11 @@ jobs:
         GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Auto-approve patch updates
-      if: steps.metadata.outputs.update-type == 'version-update:semver-patch'
+      if: steps.metadata.outputs.update-type == 'version-update:semver-patch' && secrets.DEPENDABOT_PAT != ''
       run: gh pr review --approve "$PR_URL"
       env:
         PR_URL: ${{ github.event.pull_request.html_url }}
-        GH_TOKEN: ${{ secrets.DEPENDABOT_PAT || secrets.GITHUB_TOKEN }}
+        GH_TOKEN: ${{ secrets.DEPENDABOT_PAT }}
 
     - name: Comment on minor/major updates
       if: steps.metadata.outputs.update-type != 'version-update:semver-patch'

@@ -291,7 +291,11 @@ When a `v*` tag is pushed, the `release-and-publish.yml` workflow automatically:
 
 #### Repository Prerequisites
 
-- `NPM_TOKEN` secret must be set in repository settings
+- `NPM_TOKEN` secret must be set in repository settings for npm publishing
+- `DEPENDABOT_PAT` secret must be set for auto-approving Dependabot PRs:
+  1. Create a Personal Access Token (PAT) with `repo` and `workflow` permissions
+  2. Go to Settings → Secrets and variables → Actions
+  3. Add a new secret named `DEPENDABOT_PAT` with your PAT value
 - Branch protection rules must be configured for auto-merge to work:
   1. Go to Settings → Branches
   2. Add rule for `main` branch
