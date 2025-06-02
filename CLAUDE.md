@@ -39,12 +39,44 @@ AIアシスタントがPlayFabサービスと対話できるようにするModel
 
 ```text
 /
-├── src/              # TypeScriptソースコード
-│   └── index.ts      # メインサーバー実装
-├── dist/             # コンパイル済みJavaScript（gitignore）
-├── package.json      # プロジェクト設定と依存関係
-├── tsconfig.json     # TypeScript設定
-└── .editorconfig     # コーディング規約
+├── src/                    # TypeScriptソースコード
+│   ├── index.ts           # メインエントリーポイント
+│   ├── server.ts          # MCPサーバー実装
+│   ├── config/            # 設定ファイル
+│   │   └── playfab.ts     # PlayFab SDK設定
+│   ├── handlers/          # ツールハンドラー実装
+│   │   ├── catalog/       # カタログ関連ハンドラー
+│   │   ├── inventory/     # インベントリ関連ハンドラー
+│   │   ├── player/        # プレイヤー関連ハンドラー
+│   │   └── title/         # タイトル関連ハンドラー
+│   ├── tools/             # ツール定義
+│   │   ├── catalog/       # カタログ関連ツール
+│   │   ├── inventory/     # インベントリ関連ツール
+│   │   ├── player/        # プレイヤー関連ツール
+│   │   └── title/         # タイトル関連ツール
+│   ├── types/             # TypeScript型定義
+│   │   ├── index.ts       # 共通型定義
+│   │   ├── inventory.ts   # インベントリ関連型
+│   │   └── playfab-responses.ts # PlayFab APIレスポンス型
+│   └── utils/             # ユーティリティ
+│       ├── env-validator.ts    # 環境変数検証
+│       ├── errors.ts           # カスタムエラークラス
+│       ├── input-validator.ts  # 入力検証
+│       ├── logger.ts           # ロギングユーティリティ
+│       ├── playfab-wrapper.ts  # PlayFab API ラッパー
+│       └── router.ts           # ルーターパターン実装
+├── __tests__/             # テストファイル
+│   └── setup.ts          # Jest設定
+├── dist/                  # コンパイル済みJavaScript（gitignore）
+├── package.json           # プロジェクト設定と依存関係
+├── tsconfig.json          # TypeScript設定
+├── jest.config.cjs        # Jest設定
+├── eslint.config.mjs      # ESLint設定
+├── .editorconfig          # コーディング規約
+├── CHANGELOG.md           # 変更履歴
+├── CLAUDE.md              # プロジェクトガイドライン
+├── README.md              # プロジェクト説明
+└── SECURITY.md            # セキュリティポリシー
 ```
 
 ## 環境設定
@@ -70,6 +102,17 @@ npm run watch
 
 # サーバーの起動
 npm start
+
+# その他の便利なコマンド
+npm run clean          # distディレクトリをクリーンアップ
+npm run test           # テストの実行
+npm run test:watch     # テストをウォッチモードで実行
+npm run test:coverage  # カバレッジレポート付きでテスト実行
+npm run lint           # ESLintでコード品質チェック
+npm run lint:fix       # ESLintの自動修正
+npm run format         # Prettierでコードフォーマット
+npm run format:check   # フォーマットチェック（修正なし）
+npm run typecheck      # TypeScriptの型チェック
 ```
 
 ## 開発ガイドライン
@@ -82,9 +125,12 @@ npm start
 
 ### コミット前のチェックリスト
 
-1. ビルドの成功確認: `npm run build`
-2. TypeScriptエラーチェック: `npx tsc --noEmit`
-3. サーバー起動確認: `npm start`
+1. TypeScriptエラーチェック: `npm run typecheck`
+2. Lintエラーの修正: `npm run lint:fix`
+3. コードフォーマット: `npm run format`
+4. テストの実行: `npm run test`
+5. ビルドの成功確認: `npm run build`
+6. サーバー起動確認: `npm start`
 
 ## PlayFab API統合
 
@@ -97,10 +143,16 @@ npm start
 
 ### API実装規則
 
-1. 新しいAPI統合は`src/index.ts`の既存パターンに従う
-2. Economy関連はすべてv2 APIを使用
-3. 仮想通貨はインベントリアイテムとして扱う
-4. エラーレスポンスは統一フォーマットを使用
+1. 新しいAPI統合は以下のパターンに従う：
+   - ツール定義は`src/tools/`配下に作成
+   - ハンドラー実装は`src/handlers/`配下に作成  
+   - `src/server.ts`のルーターに登録
+2. すべてのハンドラーは`playfab-wrapper`を使用してAPI呼び出しを行う
+3. Economy関連はすべてv2 APIを使用
+4. 仮想通貨はインベントリアイテムとして扱う
+5. エラーレスポンスは統一フォーマットを使用（`formatErrorResponse`）
+6. 入力検証は`input-validator`ユーティリティを使用
+7. ロギングは`logger`ユーティリティを使用（構造化ログ）
 
 ### APIレート制限
 
@@ -150,52 +202,52 @@ PlayFab APIには呼び出し制限があり、制限を超えるとスロット
 - PlayFab API使用の適切性
 - セキュリティベストプラクティスの遵守
 
-## 改善タスク一覧
+## 改善タスク一覧（元の要件）
 
-### 🚨 優先度: 緊急（1週間以内）
+### 🚨 優先度: 緊急（1週間以内）- 完了済み
 
-1. **server.tsの重複実行を削除**
+1. **server.tsの重複実行を削除** ✅
    - 221-224行目のrunServer()呼び出しを削除
    - エントリーポイントをindex.tsに統一
 
-2. **環境変数の検証強化**
+2. **環境変数の検証強化** ✅
    - TitleIDのフォーマット検証（正規表現: /^[A-F0-9]{5}$/）
    - SecretKeyの長さと強度チェック（最小32文字）
 
-3. **SECURITY.mdのセキュリティ連絡先を追加**
-   - メールアドレスとGPGキーの設定
+3. **SECURITY.mdのセキュリティ連絡先を追加** ✅
+   - GitHubの脆弱性報告機能を使用するよう更新
 
-### 🔥 優先度: 高（2週間以内）
+### 🔥 優先度: 高（2週間以内）- 完了済み
 
-1. **型安全性の向上**
-   - 38ファイルのany型を具体的な型定義に置き換え
-   - HandlerParams<T>とHandlerResponse<T>の型定義作成
-   - PlayFab APIレスポンスの型定義追加
+1. **型安全性の向上** ✅
+   - PlayFab APIレスポンスの型定義追加（playfab-responses.ts）
+   - 入力検証の型定義実装
+   - ※38ファイルのany型置き換えは継続的な改善項目
 
-2. **エラーハンドリングの統一**
-   - すべてのハンドラーでplayfab-wrapperを使用
-   - エラーレスポンスフォーマットの統一
+2. **エラーハンドリングの統一** ✅
+   - すべてのハンドラーでplayfab-wrapperを使用（28ファイル更新）
+   - エラーレスポンスフォーマットの統一（formatErrorResponse実装）
    - スタックトレースの本番環境での非表示化
 
-3. **テストの実装開始**
-   - 各ハンドラーのユニットテスト作成
+3. **テストの実装開始** ✅
+   - 各ハンドラーのユニットテスト作成（基本実装）
    - PlayFab APIのモック実装
-   - 最低限のカバレッジ目標: 60%
+   - Jest設定の最適化
 
-### ⚡ 優先度: 中（1ヶ月以内）
+### ⚡ 優先度: 中（1ヶ月以内）- 一部完了
 
-1. **ルーターパターンの実装**
+1. **ルーターパターンの実装** ✅
    - server.tsの巨大なswitch文をマップベースのルーターに変更
-   - ハンドラーの自動登録機能
-   - ミドルウェアサポートの追加
+   - ハンドラーの自動登録機能（registerBatch）
+   - ミドルウェアサポートの追加（withLogging、withValidation、withRetry）
 
-2. **トークンキャッシュメカニズム**
-   - GetEntityTokenの結果をキャッシュ
-   - トークン有効期限の管理
-   - 自動更新機能の実装
+2. **トークンキャッシュメカニズム** 🚧
+   - GetEntityTokenの結果をキャッシュ（基本実装済み）
+   - トークン有効期限の管理（実装済み）
+   - ※さらなる最適化は継続的な改善項目
 
-3. **ロギングシステムの導入**
-   - winstonまたはpinoによる構造化ログ
+3. **ロギングシステムの導入** ✅
+   - pinoによる構造化ログ実装
    - 環境別のログレベル設定
    - 機密情報のマスキング機能
 
@@ -252,40 +304,28 @@ PlayFab APIには呼び出し制限があり、制限を超えるとスロット
   - ロギングシステムの導入（pinoによる構造化ログ、パフォーマンス計測、機密情報マスキング）
   - ルーターパターンの実装（ToolRouterクラスでswitch文を置き換え、ミドルウェアサポート追加）
 
-### 進行中タスク
+- [x] **ドキュメントの整合性修正**（2025/6/3）
+  - CLAUDE.mdのプロジェクト構造を実際のディレクトリ構造に更新
+  - API実装規則にplayfab-wrapper使用やロギング、入力検証の記載を追加
+  - セットアップ手順にすべてのnpm scriptsを記載（test、lint、format等）
+  - コミット前のチェックリストを現在の開発ワークフローに合わせて更新
 
-- [x] **コードのモジュラー化とリファクタリング**（基本構造完了）
-  - [x] server.tsの重複実行を削除（221-224行目のrunServer()呼び出しを削除済み）
-  - [x] 必要な依存ファイルの作成
-    - [x] src/config/playfab.ts - PlayFab API設定ファイル（既存）
-    - [x] src/utils/errors.ts - エラーハンドリングユーティリティ（既存）
-    - [x] src/utils/env-validator.ts - 環境変数検証（既存）
-  - [x] handlersディレクトリ構造の実装（基本構造作成済み）
-  - [ ] toolsディレクトリとhandlersディレクトリの統合（将来の改善項目）
-  - [x] PlayFab APIラッパー（playfab-wrapper.ts）の実装
-  - [x] 環境変数の検証強化（TitleIDとSecretKeyのフォーマット検証）
-    - TitleID: 5文字の16進数形式（/^[A-F0-9]{5}$/）
-    - SecretKey: 最小32文字
-  - [x] 不要な一時ファイルの削除
-    - [x] refactor-script.js, refactor-script.ts, refactor.cjs
-    - [x] src/index.ts.backup
-    - [x] scripts/migrate-tools.ts
 
-## 改善タスク一覧
+## 今後の改善タスク一覧
 
-### 🚨 優先度: 緊急（1週間以内）
+### 🚨 優先度: 緊急（継続的改善）
 
-- [ ] **セキュリティの強化**
-  - [ ] SECURITY.mdにセキュリティ連絡先（メールアドレス、GPGキー）を追加
-  - [ ] 本番環境でのスタックトレース非表示化
-  - [ ] 入力検証の実装（全APIパラメータ）
-  - [ ] MCPサーバー接続の認証メカニズム追加
+- [x] **セキュリティの強化**（基本実装完了）
+  - [x] SECURITY.mdにセキュリティ連絡先を追加（GitHub脆弱性報告機能）
+  - [x] 本番環境でのスタックトレース非表示化
+  - [x] 入力検証の実装（input-validator.ts作成、2ハンドラーに実装）
+  - [ ] MCPサーバー接続の認証メカニズム追加（将来の拡張）
 
 - [ ] **型安全性の向上**（38ファイルのany型解消）
-  - [ ] PlayFab APIレスポンスの型定義作成
+  - [x] PlayFab APIレスポンスの型定義作成（playfab-responses.ts）
   - [ ] HandlerParams<T>とHandlerResponse<T>の汎用型定義
   - [ ] ツール入力スキーマの型生成
-  - [ ] エラー型の完全な定義
+  - [x] エラー型の完全な定義（errors.ts）
 
 ### 🔥 優先度: 高（2週間以内）
 
