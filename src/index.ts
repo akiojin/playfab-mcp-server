@@ -18,8 +18,8 @@ const PlayFabServerAPI = pf.PlayFabServer as PlayFabServerModule.IPlayFabServer
 
 dotenv.config()
 
-PlayFab.settings.titleId = process.env.PLAYFAB_TITLE_ID!
-PlayFab.settings.developerSecretKey = process.env.PLAYFAB_DEV_SECRET_KEY!
+PlayFab.settings.titleId = process.env['PLAYFAB_TITLE_ID']!
+PlayFab.settings.developerSecretKey = process.env['PLAYFAB_DEV_SECRET_KEY']!
 
 const SEARCH_ITEMS_TOOL: Tool = {
   name: "search_items",

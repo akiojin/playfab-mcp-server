@@ -135,6 +135,61 @@ PLAYFAB_DEV_SECRET_KEY=
    PlayFab Server running on stdio
    ```
 
+### Development Setup
+
+#### Code Quality Tools
+
+- **ESLint**: Configured for TypeScript with recommended rules for code consistency
+- **Prettier**: Automatic code formatting with project-specific settings
+- **TypeScript**: Strict mode enabled for enhanced type safety
+- **Jest**: Testing framework configured for TypeScript
+
+#### Available Scripts
+
+```bash
+# Build the project
+npm run build
+
+# Development mode with file watching
+npm run watch
+
+# TypeScript type checking
+npm run typecheck
+
+# Run ESLint
+npm run lint
+
+# Run ESLint and fix issues
+npm run lint:fix
+
+# Format code with Prettier
+npm run format
+
+# Check code formatting
+npm run format:check
+
+# Run tests
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run tests with coverage
+npm run test:coverage
+```
+
+#### TypeScript Configuration
+
+This project uses TypeScript with strict mode enabled, ensuring:
+- Strict null checks
+- No implicit any types
+- Strict function types
+- Always strict mode
+
+#### Testing
+
+Tests are written using Jest and can be found in `__tests__` directories or files with `.test.ts` extension. Run tests before committing changes to ensure code quality.
+
 ### Running with Cursor
 
 To use the PlayFab MCP server with Cursor, follow these steps:
@@ -244,24 +299,21 @@ When a `v*` tag is pushed, the `release-and-publish.yml` workflow automatically:
   4. Enable "Require status checks to pass before merging"
   5. Add required status checks: `build (18.x)`, `build (20.x)`, `build (22.x)`
 
-### Development Setup
+### Scripts Reference
 
-```bash
-# Install dependencies
-npm install
-
-# Build project
-npm run build
-
-# Watch mode
-npm run watch
-
-# Type check
-npm run typecheck
-
-# Run tests
-npm test
-```
+| Script | Description |
+|--------|-------------|
+| `npm start` | Start the MCP server |
+| `npm run build` | Build TypeScript to JavaScript |
+| `npm run watch` | Build in watch mode for development |
+| `npm run typecheck` | Run TypeScript type checking |
+| `npm run lint` | Run ESLint checks |
+| `npm run lint:fix` | Fix ESLint issues automatically |
+| `npm run format` | Format code with Prettier |
+| `npm run format:check` | Check code formatting |
+| `npm test` | Run all tests |
+| `npm run test:watch` | Run tests in watch mode |
+| `npm run test:coverage` | Generate test coverage report |
 
 ## Security
 
