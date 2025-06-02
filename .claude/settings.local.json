@@ -37,7 +37,9 @@
       "Bash(/Users/akio-jinsenji/.nodebrew/node/v20.9.0/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg \"any\" /Users/akio-jinsenji/Workbench/akiojin/playfab-mcp-server/src --type ts -n)",
       "Bash(/Users/akio-jinsenji/.nodebrew/node/v20.9.0/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg \"TODO|FIXME|XXX|HACK\" /Users/akio-jinsenji/Workbench/akiojin/playfab-mcp-server/src --type ts -n)",
       "Bash(git restore:*)",
-      "Bash(touch:*)"
+      "Bash(touch:*)",
+      "Bash(pip install:*)",
+      "Bash(python:*)"
     ]
   },
   "enableAllProjectMcpServers": false
