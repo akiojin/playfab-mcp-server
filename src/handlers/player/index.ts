@@ -4,5 +4,6 @@ export { GetTitlePlayerAccountIdsFromPlayFabIds } from "./get-title-player-accou
 export { BanUsers } from "./ban-users.js";
 export { RevokeAllBansForUser } from "./revoke-all-bans-for-user.js";
 export { GetUserAccountInfo } from "./get-user-account-info.js";
-export { GetUserData } from "./get-user-data.js";
+// DI版を優先的に使用
+export { GetUserData } from "./get-user-data-di.js";
 export { UpdateUserData } from "./update-user-data.js";

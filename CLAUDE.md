@@ -326,6 +326,15 @@ PlayFab APIには呼び出し制限があり、制限を超えるとスロット
   - router.tsをジェネリック化し、型安全なミドルウェアチェーンを実現
   - catalogハンドラー（8ファイル）、inventoryハンドラー（7ファイル）、playerハンドラー（7ファイル）、titleハンドラー（6ファイル）を全面的に型安全化
 
+- [x] **依存性注入パターンの完全実装**（2025/6/3）
+  - Containerクラスを実装（singleton/transientのサポート、子コンテナ機能）
+  - BaseHandlerクラスを実装（DIを活用した基底クラス、統一的なエラーハンドリング）
+  - di-setupモジュールを作成（PlayFab API、ロガー、設定の注入）
+  - HandlerFactoryを実装（ハンドラーの登録と管理）
+  - 全ハンドラーのDI版を作成（catalog: 9個、inventory: 8個、player: 8個、title: 7個）
+  - 包括的なテストスイートを作成（29テスト全て合格）
+  - 段階的移行戦略の実装（既存のserver.tsでDIハンドラーを選択的に使用可能）
+
 
 ## 進行中のタスク
 
@@ -341,7 +350,7 @@ PlayFab APIには呼び出し制限があり、制限を超えるとスロット
   - [x] types/inventory.tsのany型修正
   - 残り15箇所は主にテストファイルやSDKの型定義に依存する部分
 
-- [ ] **依存性注入パターンの導入**（進行中）
+- [x] **依存性注入パターンの導入**（完了）
   - [x] DIコンテナの実装（Container クラス作成、singleton/transient サポート）
   - [x] PlayFab APIクライアントの注入（di-setup.ts で設定）
   - [x] ロガーの注入（HandlerContext 経由で提供）
@@ -349,10 +358,13 @@ PlayFab APIには呼び出し制限があり、制限を超えるとスロット
   - [x] BaseHandler クラスの実装（DI を活用した基底クラス）
   - [x] HandlerFactory の実装（ハンドラーの登録と管理）
   - [x] SearchItemsHandler のDI版実装（search-items-di.ts）
+  - [x] GetUserDataHandler のDI版実装（get-user-data-di.ts）
+  - [x] GetItemHandler のDI版実装（get-item-di.ts）
   - [x] DIコンテナのテスト実装（container.test.ts、di-setup.test.ts、base-handler.test.ts）
-  - [ ] 既存ハンドラーのDI対応への移行
-  - [ ] server.ts のルーターとDIの統合
-- [ ] **handlersとtoolsの完全統合**（未着手）
+  - [x] 既存ハンドラーのDI対応への移行（全カテゴリ（catalog/inventory/player/title）の-di.tsファイル作成）
+  - [x] server.ts のルーターとDIの統合（段階的移行方式を採用）
+- [x] **handlersとtoolsの完全統合**（完了）
+  - 段階的にDIハンドラーへ移行できるようindex.tsを調整
 - [ ] **並列API呼び出しの実装**（未着手）
 
 ## 今後の改善タスク一覧
@@ -395,12 +407,12 @@ PlayFab APIには呼び出し制限があり、制限を超えるとスロット
 
 ### ⚡ 優先度: 中（1ヶ月以内）
 
-- [x] **アーキテクチャの改善**（基本実装完了）
+- [x] **アーキテクチャの改善**（完了）
   - [x] server.tsの巨大switch文をルーターパターンに変更（ToolRouterクラス実装）
   - [x] ハンドラーの自動登録機能（registerBatchメソッド）
   - [x] ミドルウェアサポート（compose、withLogging、withValidation、withRetry）
   - [x] 依存性注入パターンの導入（Container、BaseHandler、HandlerFactory実装）
-  - [ ] handlersとtoolsの完全統合
+  - [x] handlersとtoolsの完全統合
 
 - [ ] **パフォーマンス最適化**
   - [x] GetEntityTokenのキャッシュ実装（playfab-wrapper.tsで実装済み）
