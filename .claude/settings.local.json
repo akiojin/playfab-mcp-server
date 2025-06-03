@@ -39,7 +39,8 @@
       "Bash(git restore:*)",
       "Bash(touch:*)",
       "Bash(pip install:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(sed:*)"
     ]
   },
   "enableAllProjectMcpServers": false

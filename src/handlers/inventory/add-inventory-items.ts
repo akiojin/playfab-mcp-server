@@ -1,5 +1,5 @@
 import { PlayFabEconomyAPI } from "../../config/playfab.js";
-import { callPlayFabApi, addCustomTags } from "../../utils/playfab-wrapper.js";
+import { callPlayerAPI, addCustomTags } from "../../utils/playfab-wrapper.js";
 import { 
   validateString, 
   validateNumber, 
@@ -7,21 +7,30 @@ import {
   validatePlayerId,
   validateCurrencyAmount 
 } from "../../utils/input-validator.js";
+import { HandlerResponse, PlayFabHandler } from "../../types/index.js";
+import { AddInventoryItemsResponse } from "../../types/playfab-responses.js";
+import { AddInventoryItemsParams } from "../../types/tool-params.js";
 
-interface AddInventoryItemsParams {
+interface AddInventoryItemsRequestParams {
   Amount: number;
   CollectionId?: string;
   DurationInSeconds?: number;
   IdempotencyId?: string;
-  Item: any;
-  NewStackValues?: any;
+  Item: Record<string, unknown>;
+  NewStackValues?: Record<string, unknown>;
   Entity: {
     Id: string;
     Type: string;
   };
 }
 
-export async function AddInventoryItems(params: any) {
+interface AddInventoryItemsResult {
+  eTag?: string;
+  idempotencyId?: string;
+  transactionIds?: string[];
+}
+
+export const AddInventoryItems: PlayFabHandler<AddInventoryItemsParams, AddInventoryItemsResult> = async (params) => {
   // Validate required parameters
   const titlePlayerAccountId = validatePlayerId(params.TitlePlayerAccountId, 'TitlePlayerAccountId');
   const amount = validateCurrencyAmount(params.Amount, 'Amount');
@@ -31,9 +40,14 @@ export async function AddInventoryItems(params: any) {
   }
 
   // Build request with validated parameters
-  const validatedParams: AddInventoryItemsParams = {
+  const itemObject = validateObject(params.Item, 'Item', { required: true });
+  if (!itemObject) {
+    throw new Error('Item is required');
+  }
+
+  const validatedParams: AddInventoryItemsRequestParams = {
     Amount: amount,
-    Item: validateObject(params.Item, 'Item', { required: true }),
+    Item: itemObject,
     Entity: {
       Id: titlePlayerAccountId,
       Type: "title_player_account"
@@ -59,9 +73,9 @@ export async function AddInventoryItems(params: any) {
 
   // Make API call with validated parameters
   const request = addCustomTags(validatedParams);
-  const result = await callPlayFabApi(
+  const result = await callPlayerAPI(
     PlayFabEconomyAPI.AddInventoryItems,
-    request as any,
+    request,
     'AddInventoryItems'
   );
   
@@ -70,5 +84,5 @@ export async function AddInventoryItems(params: any) {
     eTag: result.ETag,
     idempotencyId: result.IdempotencyId,
     transactionIds: result.TransactionIds,
-  };
+  } as HandlerResponse<AddInventoryItemsResult>;
 }

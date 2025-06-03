@@ -131,25 +131,11 @@ export const withValidation = (validator: (args: any) => void) => {
   };
 };
 
-export const withRetry = (maxRetries = 3, delay = 1000) => {
+export const withRetry = (retryOptions: Partial<import('./retry.js').RetryOptions> = {}) => {
   return (next: ToolHandler): ToolHandler => {
     return async (args: any) => {
-      let lastError: any;
-      
-      for (let i = 0; i < maxRetries; i++) {
-        try {
-          return await next(args);
-        } catch (error) {
-          lastError = error;
-          logger.warn({ attempt: i + 1, maxRetries, error }, 'Retry attempt failed');
-          
-          if (i < maxRetries - 1) {
-            await new Promise(resolve => setTimeout(resolve, delay * (i + 1)));
-          }
-        }
-      }
-      
-      throw lastError;
+      const { retryWithPlayFabLogic } = await import('./retry.js');
+      return retryWithPlayFabLogic(() => next(args), retryOptions);
     };
   };
 };

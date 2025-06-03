@@ -2,9 +2,10 @@
  * Common type definitions
  */
 
-export interface SuccessResponse<T = any> {
+export interface SuccessResponse<T = unknown> {
   success: true
-  [key: string]: any
+  data?: T
+  [key: string]: unknown
 }
 
 export interface ErrorResponse {
@@ -17,7 +18,7 @@ export interface ErrorResponse {
   }
 }
 
-export type ApiResponse<T = any> = SuccessResponse<T> | ErrorResponse
+export type ApiResponse<T = unknown> = SuccessResponse<T> | ErrorResponse
 
 export interface PaginatedRequest {
   Count?: number
@@ -34,7 +35,39 @@ export interface BatchOperationResult {
   success: boolean
   index: number
   error?: string
-  [key: string]: any
+  [key: string]: unknown
+}
+
+// Handler-specific type definitions
+export type HandlerParams<T = Record<string, unknown>> = T & Record<string, unknown>
+
+export type HandlerResponse<T = unknown> = SuccessResponse<T> | ErrorResponse
+
+export type PlayFabHandler<TParams = HandlerParams, TResponse = unknown> = (
+  params: TParams
+) => Promise<HandlerResponse<TResponse>>
+
+// Specific parameter types for common patterns
+export interface SearchParams extends PaginatedRequest {
+  Filter?: string
+  OrderBy?: string
+  Search?: string
+}
+
+export interface ItemParams {
+  Id: string
+  ETag?: string
+}
+
+export interface CollectionParams {
+  CollectionId?: string
+  Count?: number
+}
+
+export interface PlayerParams {
+  PlayFabId?: string
+  EntityId?: string
+  EntityType?: string
 }
 
 export interface ConfirmationRequired {

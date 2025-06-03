@@ -4,6 +4,7 @@
 import { PlayFabAuthenticationAPI } from '../config/playfab.js'
 import { wrapPlayFabError, RateLimitError } from './errors.js'
 import { logAPICall, createLogger } from './logger.js'
+import { retryWithPlayFabLogic, PLAYFAB_RETRY_CONFIGS, RetryOptions } from './retry.js'
 
 const logger = createLogger('playfab-wrapper')
 
@@ -12,49 +13,58 @@ export interface PlayFabApiCall<TRequest, TResponse> {
 }
 
 /**
- * Wraps a PlayFab API call in a Promise with proper error handling
+ * Wraps a PlayFab API call in a Promise with proper error handling and retry logic
  */
 export async function callPlayFabApi<TRequest, TResponse>(
   apiMethod: PlayFabApiCall<TRequest, TResponse>,
   request: TRequest,
-  methodName: string
+  methodName: string,
+  retryOptions?: Partial<RetryOptions>
 ): Promise<TResponse> {
   // First, ensure we have a valid entity token
   await ensureEntityToken()
   
-  const startTime = Date.now()
-  logger.debug({ method: methodName }, `Calling PlayFab API: ${methodName}`)
+  // Use standard retry config by default, but allow override
+  const finalRetryOptions = {
+    ...PLAYFAB_RETRY_CONFIGS.standard,
+    ...retryOptions
+  }
   
-  return new Promise((resolve, reject) => {
-    apiMethod(request, (error, result) => {
-      const duration = Date.now() - startTime
-      
-      if (error) {
-        logAPICall(methodName, request, null, duration, error)
+  return retryWithPlayFabLogic(async () => {
+    const startTime = Date.now()
+    logger.debug({ method: methodName }, `Calling PlayFab API: ${methodName}`)
+    
+    return new Promise<TResponse>((resolve, reject) => {
+      apiMethod(request, (error, result) => {
+        const duration = Date.now() - startTime
         
-        // Check for rate limiting
-        if (error.code === 429 || error.errorCode === 1117) {
-          reject(new RateLimitError(
-            `Rate limit exceeded for ${methodName}`,
-            error.retryAfterSeconds
-          ))
-        } else {
-          reject(wrapPlayFabError(error, methodName))
+        if (error) {
+          logAPICall(methodName, request, null, duration, error)
+          
+          // Check for rate limiting
+          if (error.code === 429 || error.errorCode === 1117) {
+            reject(new RateLimitError(
+              `Rate limit exceeded for ${methodName}`,
+              error.retryAfterSeconds
+            ))
+          } else {
+            reject(wrapPlayFabError(error, methodName))
+          }
+          return
         }
-        return
-      }
-      
-      if (!result?.data) {
-        const noDataError = new Error(`No data returned from ${methodName}`)
-        logAPICall(methodName, request, null, duration, noDataError)
-        reject(noDataError)
-        return
-      }
-      
-      logAPICall(methodName, request, result.data, duration)
-      resolve(result.data)
+        
+        if (!result?.data) {
+          const noDataError = new Error(`No data returned from ${methodName}`)
+          logAPICall(methodName, request, null, duration, noDataError)
+          reject(noDataError)
+          return
+        }
+        
+        logAPICall(methodName, request, result.data, duration)
+        resolve(result.data)
+      })
     })
-  })
+  }, finalRetryOptions)
 }
 
 /**
@@ -120,4 +130,35 @@ export function addCustomTags<T>(
       ...((request as any).CustomTags || {})
     }
   }
+}
+
+/**
+ * Convenience functions for different API categories
+ */
+
+// For player-facing inventory and economy operations with strict limits
+export async function callPlayerAPI<TRequest, TResponse>(
+  apiMethod: PlayFabApiCall<TRequest, TResponse>,
+  request: TRequest,
+  methodName: string
+): Promise<TResponse> {
+  return callPlayFabApi(apiMethod, request, methodName, PLAYFAB_RETRY_CONFIGS.strict)
+}
+
+// For admin/server operations
+export async function callAdminAPI<TRequest, TResponse>(
+  apiMethod: PlayFabApiCall<TRequest, TResponse>,
+  request: TRequest,
+  methodName: string
+): Promise<TResponse> {
+  return callPlayFabApi(apiMethod, request, methodName, PLAYFAB_RETRY_CONFIGS.standard)
+}
+
+// For bulk operations
+export async function callBulkAPI<TRequest, TResponse>(
+  apiMethod: PlayFabApiCall<TRequest, TResponse>,
+  request: TRequest,
+  methodName: string
+): Promise<TResponse> {
+  return callPlayFabApi(apiMethod, request, methodName, PLAYFAB_RETRY_CONFIGS.bulk)
 }

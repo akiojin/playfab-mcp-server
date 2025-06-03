@@ -31,8 +31,6 @@ export const SEARCH_ITEMS_TOOL: Tool = {
         description: "Text to search for in the catalog. Example: 'sword'"
       }
     },
-    required: [
-      "Count"
-    ],
+    required: [],
   },
 }

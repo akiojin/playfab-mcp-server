@@ -45,7 +45,7 @@ describe('PlayFab Wrapper', () => {
         callback(null, mockResponse);
       });
 
-      const result = await callPlayFabApi(mockApiMethod, mockRequest, 'TestMethod');
+      const result = await callPlayFabApi(mockApiMethod, mockRequest, 'TestMethod', { maxRetries: 0 });
 
       expect(result).toEqual(mockResponse.data);
       expect(mockApiMethod).toHaveBeenCalledWith(mockRequest, expect.any(Function));
@@ -60,7 +60,7 @@ describe('PlayFab Wrapper', () => {
 
       mockWrapPlayFabError.mockReturnValue(new Error('Wrapped error') as any);
 
-      await expect(callPlayFabApi(mockApiMethod, mockRequest, 'TestMethod'))
+      await expect(callPlayFabApi(mockApiMethod, mockRequest, 'TestMethod', { maxRetries: 0 }))
         .rejects.toThrow('Wrapped error');
 
       expect(mockWrapPlayFabError).toHaveBeenCalledWith(mockError, 'TestMethod');
@@ -72,16 +72,17 @@ describe('PlayFab Wrapper', () => {
         callback(mockError, null);
       });
 
-      await expect(callPlayFabApi(mockApiMethod, mockRequest, 'TestMethod'))
+      // Test with no retries to avoid timeout
+      await expect(callPlayFabApi(mockApiMethod, mockRequest, 'TestMethod', { maxRetries: 0 }))
         .rejects.toThrow(RateLimitError);
-    });
+    }, 10000);
 
     it('should handle missing response data', async () => {
       mockApiMethod.mockImplementation((req, callback) => {
         callback(null, {});
       });
 
-      await expect(callPlayFabApi(mockApiMethod, mockRequest, 'TestMethod'))
+      await expect(callPlayFabApi(mockApiMethod, mockRequest, 'TestMethod', { maxRetries: 0 }))
         .rejects.toThrow('No data returned from TestMethod');
     });
 
@@ -92,11 +93,11 @@ describe('PlayFab Wrapper', () => {
       });
 
       // First call
-      await callPlayFabApi(mockApiMethod, mockRequest, 'TestMethod');
+      await callPlayFabApi(mockApiMethod, mockRequest, 'TestMethod', { maxRetries: 0 });
       expect(mockGetEntityToken).toHaveBeenCalledTimes(1);
 
       // Second call - should reuse token
-      await callPlayFabApi(mockApiMethod, mockRequest, 'TestMethod');
+      await callPlayFabApi(mockApiMethod, mockRequest, 'TestMethod', { maxRetries: 0 });
       expect(mockGetEntityToken).toHaveBeenCalledTimes(1);
     });
 
@@ -129,7 +130,7 @@ describe('PlayFab Wrapper', () => {
         });
       });
 
-      await callPlayFabApi(mockApiMethod, mockRequest, 'TestMethod');
+      await callPlayFabApi(mockApiMethod, mockRequest, 'TestMethod', { maxRetries: 0 });
       
       // Should fetch new token because previous one expired
       expect(mockGetEntityToken).toHaveBeenCalledTimes(1);
@@ -143,7 +144,7 @@ describe('PlayFab Wrapper', () => {
 
       mockWrapPlayFabError.mockReturnValue(new Error('Token fetch failed') as any);
 
-      await expect(callPlayFabApi(mockApiMethod, mockRequest, 'TestMethod'))
+      await expect(callPlayFabApi(mockApiMethod, mockRequest, 'TestMethod', { maxRetries: 0 }))
         .rejects.toThrow('Token fetch failed');
 
       expect(mockWrapPlayFabError).toHaveBeenCalledWith(tokenError, 'GetEntityToken');

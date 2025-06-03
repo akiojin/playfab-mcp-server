@@ -3,17 +3,17 @@
  */
 import { SearchItems } from '../search-items';
 import { PlayFabEconomyAPI } from '../../../config/playfab';
-import { callPlayFabApi } from '../../../utils/playfab-wrapper';
+import { callAdminAPI } from '../../../utils/playfab-wrapper';
 import { ValidationError } from '../../../utils/errors';
 
 // Mock dependencies
 jest.mock('../../../config/playfab');
 jest.mock('../../../utils/playfab-wrapper', () => ({
-  callPlayFabApi: jest.fn(),
+  callAdminAPI: jest.fn(),
   addCustomTags: jest.fn((request) => ({ ...request, CustomTags: { mcp: 'true' } })),
 }));
 
-const mockCallPlayFabApi = callPlayFabApi as jest.MockedFunction<typeof callPlayFabApi>;
+const mockCallAdminAPI = callAdminAPI as jest.MockedFunction<typeof callAdminAPI>;
 
 describe('SearchItems Handler', () => {
   beforeEach(() => {
@@ -29,7 +29,7 @@ describe('SearchItems Handler', () => {
       ContinuationToken: 'next-page-token',
     };
 
-    mockCallPlayFabApi.mockResolvedValueOnce(mockResponse);
+    mockCallAdminAPI.mockResolvedValueOnce(mockResponse);
 
     const result = await SearchItems({ Count: 10 });
 
@@ -39,7 +39,7 @@ describe('SearchItems Handler', () => {
       continuationToken: mockResponse.ContinuationToken,
     });
 
-    expect(mockCallPlayFabApi).toHaveBeenCalledWith(
+    expect(mockCallAdminAPI).toHaveBeenCalledWith(
       PlayFabEconomyAPI.SearchItems,
       expect.objectContaining({
         Count: 10,
@@ -55,7 +55,7 @@ describe('SearchItems Handler', () => {
       ContinuationToken: undefined,
     };
 
-    mockCallPlayFabApi.mockResolvedValueOnce(mockResponse);
+    mockCallAdminAPI.mockResolvedValueOnce(mockResponse);
 
     const params = {
       Count: 25,
@@ -73,7 +73,7 @@ describe('SearchItems Handler', () => {
       continuationToken: undefined,
     });
 
-    expect(mockCallPlayFabApi).toHaveBeenCalledWith(
+    expect(mockCallAdminAPI).toHaveBeenCalledWith(
       PlayFabEconomyAPI.SearchItems,
       expect.objectContaining({
         ...params,
@@ -84,11 +84,11 @@ describe('SearchItems Handler', () => {
   });
 
   it('should use default count when not provided', async () => {
-    mockCallPlayFabApi.mockResolvedValueOnce({ Items: [] });
+    mockCallAdminAPI.mockResolvedValueOnce({ Items: [] });
 
     await SearchItems({});
 
-    expect(mockCallPlayFabApi).toHaveBeenCalledWith(
+    expect(mockCallAdminAPI).toHaveBeenCalledWith(
       PlayFabEconomyAPI.SearchItems,
       expect.objectContaining({
         Count: 10,
@@ -122,18 +122,18 @@ describe('SearchItems Handler', () => {
 
   it('should handle API errors', async () => {
     const apiError = new Error('API Error');
-    mockCallPlayFabApi.mockRejectedValueOnce(apiError);
+    mockCallAdminAPI.mockRejectedValueOnce(apiError);
 
     await expect(SearchItems({ Count: 10 }))
       .rejects.toThrow('API Error');
   });
 
   it('should pass through custom tags', async () => {
-    mockCallPlayFabApi.mockResolvedValueOnce({ Items: [] });
+    mockCallAdminAPI.mockResolvedValueOnce({ Items: [] });
 
     await SearchItems({ Count: 10 });
 
-    const callArgs = mockCallPlayFabApi.mock.calls[0];
+    const callArgs = mockCallAdminAPI.mock.calls[0];
     expect(callArgs?.[1]).toHaveProperty('CustomTags', expect.objectContaining({
       mcp: 'true',
     }));

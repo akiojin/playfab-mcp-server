@@ -1,8 +1,16 @@
 import { PlayFabEconomyAPI } from "../../config/playfab.js";
-import { callPlayFabApi, addCustomTags } from "../../utils/playfab-wrapper.js";
+import { callAdminAPI, addCustomTags } from "../../utils/playfab-wrapper.js";
 import { validateString, validateNumber, validatePaginationCount } from "../../utils/input-validator.js";
+import { HandlerResponse, PlayFabHandler } from "../../types/index.js";
+import { SearchItemsResponse } from "../../types/playfab-responses.js";
+import { SearchItemsParams } from "../../types/tool-params.js";
 
-interface SearchItemsParams {
+interface SearchItemsResult {
+  items: SearchItemsResponse['Items'];
+  continuationToken?: string;
+}
+
+interface SearchItemsValidatedParams {
   Count: number;
   ContinuationToken?: string;
   Filter?: string;
@@ -10,9 +18,9 @@ interface SearchItemsParams {
   Search?: string;
 }
 
-export async function SearchItems(params: any) {
+export const SearchItems: PlayFabHandler<SearchItemsParams, SearchItemsResult> = async (params) => {
   // Validate input parameters
-  const validatedParams: SearchItemsParams = {
+  const validatedParams: SearchItemsValidatedParams = {
     Count: validatePaginationCount(params.Count, 'Count', 10, 50),
   };
 
@@ -31,9 +39,9 @@ export async function SearchItems(params: any) {
 
   // Make API call with validated parameters
   const request = addCustomTags(validatedParams);
-  const result = await callPlayFabApi(
+  const result = await callAdminAPI(
     PlayFabEconomyAPI.SearchItems,
-    request as any,
+    request,
     'SearchItems'
   );
   
@@ -41,5 +49,5 @@ export async function SearchItems(params: any) {
     success: true,
     items: result.Items,
     continuationToken: result.ContinuationToken
-  };
+  } as HandlerResponse<SearchItemsResult>;
 }
