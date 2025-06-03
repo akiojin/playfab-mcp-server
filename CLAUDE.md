@@ -319,6 +319,13 @@ PlayFab APIには呼び出し制限があり、制限を超えるとスロット
   - 主要ツールの型安全なパラメーター定義を作成（tool-params.ts）
   - 包括的なテストスイートを作成（123テスト、ユーティリティ90%以上のカバレッジ）
 
+- [x] **大規模なany型削減とハンドラーの型安全性向上**（2025/6/3）
+  - 38ファイルでany型を削減し、適切な型定義に置き換え
+  - すべてのハンドラーをPlayFabHandler型を使用するconst式に変更
+  - handler-types.tsを新規作成し、ハンドラー専用の型定義を集約
+  - router.tsをジェネリック化し、型安全なミドルウェアチェーンを実現
+  - catalogハンドラー（8ファイル）、inventoryハンドラー（7ファイル）、playerハンドラー（7ファイル）、titleハンドラー（6ファイル）を全面的に型安全化
+
 
 ## 進行中のタスク
 
@@ -334,7 +341,17 @@ PlayFab APIには呼び出し制限があり、制限を超えるとスロット
   - [x] types/inventory.tsのany型修正
   - 残り15箇所は主にテストファイルやSDKの型定義に依存する部分
 
-- [ ] **依存性注入パターンの導入**（未着手）
+- [ ] **依存性注入パターンの導入**（進行中）
+  - [x] DIコンテナの実装（Container クラス作成、singleton/transient サポート）
+  - [x] PlayFab APIクライアントの注入（di-setup.ts で設定）
+  - [x] ロガーの注入（HandlerContext 経由で提供）
+  - [x] 設定の注入（AppConfig として管理）
+  - [x] BaseHandler クラスの実装（DI を活用した基底クラス）
+  - [x] HandlerFactory の実装（ハンドラーの登録と管理）
+  - [x] SearchItemsHandler のDI版実装（search-items-di.ts）
+  - [x] DIコンテナのテスト実装（container.test.ts、di-setup.test.ts、base-handler.test.ts）
+  - [ ] 既存ハンドラーのDI対応への移行
+  - [ ] server.ts のルーターとDIの統合
 - [ ] **handlersとtoolsの完全統合**（未着手）
 - [ ] **並列API呼び出しの実装**（未着手）
 
@@ -382,7 +399,7 @@ PlayFab APIには呼び出し制限があり、制限を超えるとスロット
   - [x] server.tsの巨大switch文をルーターパターンに変更（ToolRouterクラス実装）
   - [x] ハンドラーの自動登録機能（registerBatchメソッド）
   - [x] ミドルウェアサポート（compose、withLogging、withValidation、withRetry）
-  - [ ] 依存性注入パターンの導入
+  - [x] 依存性注入パターンの導入（Container、BaseHandler、HandlerFactory実装）
   - [ ] handlersとtoolsの完全統合
 
 - [ ] **パフォーマンス最適化**

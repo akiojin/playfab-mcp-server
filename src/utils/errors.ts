@@ -150,3 +150,24 @@ export function wrapPlayFabError(
     apiMethod
   )
 }
+
+/**
+ * Creates an error response with custom code and message
+ */
+export function createErrorResponse(code: string, message: string, data?: unknown): {
+  success: false
+  error: {
+    code: string
+    message: string
+    details?: unknown
+  }
+} {
+  return {
+    success: false,
+    error: {
+      code,
+      message,
+      details: data
+    }
+  }
+}

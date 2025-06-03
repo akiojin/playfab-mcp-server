@@ -4,6 +4,28 @@
 import { ValidationError } from './errors.js'
 
 /**
+ * Validates that a value is a required non-empty string
+ */
+export function validateRequiredString(
+  value: unknown,
+  fieldName: string,
+  options?: {
+    minLength?: number
+    maxLength?: number
+    pattern?: RegExp
+  }
+): string {
+  const result = validateString(value, fieldName, { ...options, required: true })
+  if (result === undefined) {
+    throw new ValidationError(`${fieldName} is required`)
+  }
+  if (result === '') {
+    throw new ValidationError(`${fieldName} cannot be empty`)
+  }
+  return result
+}
+
+/**
  * Validates that a value is a non-empty string
  */
 export function validateString(
