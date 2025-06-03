@@ -58,10 +58,10 @@ describe('Error Classes', () => {
 
   describe('PlayFabAPIError', () => {
     it('should create PlayFab API error', () => {
-      const playfabError = { errorCode: 1000, code: 400, errorMessage: 'API Error' };
+      const playfabError = { errorCode: '1000', code: 400, errorMessage: 'API Error' };
       const error = new PlayFabAPIError('API failed', playfabError, 'TestMethod');
       expect(error.message).toBe('API failed');
-      expect(error.code).toBe(1000);
+      expect(error.code).toBe('1000');
       expect(error.statusCode).toBe(400);
       expect(error.playfabError).toBe(playfabError);
       expect(error.apiMethod).toBe('TestMethod');

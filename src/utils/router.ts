@@ -5,32 +5,36 @@ import { createLogger } from './logger.js';
 
 const logger = createLogger('router');
 
-export type ToolHandler = (args: any) => Promise<any>;
+export type ToolHandler<TParams = unknown, TResult = unknown> = (args: TParams) => Promise<TResult>;
 
-export interface Route {
-  handler: ToolHandler;
+export interface Route<TParams = unknown, TResult = unknown> {
+  handler: ToolHandler<TParams, TResult>;
   description?: string;
 }
 
 export class ToolRouter {
-  private routes: Map<string, Route> = new Map();
+  private routes: Map<string, Route<unknown, unknown>> = new Map();
 
   /**
    * Register a tool handler
    */
-  register(name: string, handler: ToolHandler, description?: string): void {
+  register<TParams = unknown, TResult = unknown>(
+    name: string, 
+    handler: ToolHandler<TParams, TResult>, 
+    description?: string
+  ): void {
     if (this.routes.has(name)) {
       logger.warn({ tool: name }, `Overwriting existing handler for tool: ${name}`);
     }
     
-    this.routes.set(name, { handler, description });
+    this.routes.set(name, { handler: handler as ToolHandler<unknown, unknown>, description });
     logger.debug({ tool: name, description }, `Registered handler for tool: ${name}`);
   }
 
   /**
    * Register multiple handlers at once
    */
-  registerBatch(handlers: Record<string, Route | ToolHandler>): void {
+  registerBatch(handlers: Record<string, Route<unknown, unknown> | ToolHandler>): void {
     Object.entries(handlers).forEach(([name, value]) => {
       if (typeof value === 'function') {
         this.register(name, value);
@@ -43,7 +47,7 @@ export class ToolRouter {
   /**
    * Get a handler by name
    */
-  get(name: string): ToolHandler | undefined {
+  get(name: string): ToolHandler<unknown, unknown> | undefined {
     return this.routes.get(name)?.handler;
   }
 
@@ -57,7 +61,10 @@ export class ToolRouter {
   /**
    * Execute a handler
    */
-  async execute(name: string, args: any): Promise<any> {
+  async execute<TParams = unknown, TResult = unknown>(
+    name: string, 
+    args: TParams
+  ): Promise<TResult> {
     const route = this.routes.get(name);
     
     if (!route) {
@@ -67,7 +74,7 @@ export class ToolRouter {
     logger.debug({ tool: name, hasArgs: !!args }, `Executing handler for tool: ${name}`);
     
     try {
-      return await route.handler(args);
+      return await route.handler(args) as TResult;
     } catch (error) {
       logger.error({ tool: name, error }, `Handler failed for tool: ${name}`);
       throw error;
@@ -113,8 +120,10 @@ export class ToolRouter {
 export const router = new ToolRouter();
 
 // Middleware examples
-export const withLogging = (next: ToolHandler): ToolHandler => {
-  return async (args: any) => {
+export const withLogging = <TParams = unknown, TResult = unknown>(
+  next: ToolHandler<TParams, TResult>
+): ToolHandler<TParams, TResult> => {
+  return async (args: TParams) => {
     logger.debug({ args }, 'Middleware: withLogging - before');
     const result = await next(args);
     logger.debug({ result }, 'Middleware: withLogging - after');
@@ -122,18 +131,22 @@ export const withLogging = (next: ToolHandler): ToolHandler => {
   };
 };
 
-export const withValidation = (validator: (args: any) => void) => {
-  return (next: ToolHandler): ToolHandler => {
-    return async (args: any) => {
+export const withValidation = <TParams = unknown, TResult = unknown>(
+  validator: (args: TParams) => void
+) => {
+  return (next: ToolHandler<TParams, TResult>): ToolHandler<TParams, TResult> => {
+    return async (args: TParams) => {
       validator(args);
       return next(args);
     };
   };
 };
 
-export const withRetry = (retryOptions: Partial<import('./retry.js').RetryOptions> = {}) => {
-  return (next: ToolHandler): ToolHandler => {
-    return async (args: any) => {
+export const withRetry = <TParams = unknown, TResult = unknown>(
+  retryOptions: Partial<import('./retry.js').RetryOptions> = {}
+) => {
+  return (next: ToolHandler<TParams, TResult>): ToolHandler<TParams, TResult> => {
+    return async (args: TParams) => {
       const { retryWithPlayFabLogic } = await import('./retry.js');
       return retryWithPlayFabLogic(() => next(args), retryOptions);
     };

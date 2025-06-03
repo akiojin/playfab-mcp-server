@@ -1,10 +1,12 @@
+import { PlayFabHandler } from "../../types/index.js";
+import { GetCatalogConfigParams, GetCatalogConfigResult } from "../../types/handler-types.js";
 import { PlayFabEconomyAPI } from "../../config/playfab.js";
-import { callPlayFabApi, addCustomTags } from "../../utils/playfab-wrapper.js";
+import { callAdminAPI, addCustomTags } from "../../utils/playfab-wrapper.js";
 
-export async function GetCatalogConfig() {
+export const GetCatalogConfig: PlayFabHandler<GetCatalogConfigParams, GetCatalogConfigResult> = async () => {
   const request = addCustomTags({});
   
-  const result = await callPlayFabApi(
+  const result = await callAdminAPI(
     PlayFabEconomyAPI.GetCatalogConfig,
     request,
     'GetCatalogConfig'
@@ -12,6 +14,6 @@ export async function GetCatalogConfig() {
   
   return {
     success: true,
-    config: result.Config,
+    config: result.Config || {},
   };
-}
+};

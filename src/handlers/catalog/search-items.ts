@@ -6,7 +6,7 @@ import { SearchItemsResponse } from "../../types/playfab-responses.js";
 import { SearchItemsParams } from "../../types/tool-params.js";
 
 interface SearchItemsResult {
-  items: SearchItemsResponse['Items'];
+  items: any[];
   continuationToken?: string;
 }
 
@@ -47,7 +47,7 @@ export const SearchItems: PlayFabHandler<SearchItemsParams, SearchItemsResult> =
   
   return {
     success: true,
-    items: result.Items,
+    items: result.Items || [],
     continuationToken: result.ContinuationToken
-  } as HandlerResponse<SearchItemsResult>;
+  };
 }

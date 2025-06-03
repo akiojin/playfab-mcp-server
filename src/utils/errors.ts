@@ -36,10 +36,17 @@ export class RateLimitError extends PlayFabMCPError {
   }
 }
 
+export interface PlayFabErrorDetails {
+  errorCode?: string;
+  errorMessage?: string;
+  code?: number;
+  [key: string]: unknown;
+}
+
 export class PlayFabAPIError extends PlayFabMCPError {
   constructor(
     message: string,
-    public readonly playfabError: any,
+    public readonly playfabError: PlayFabErrorDetails,
     public readonly apiMethod?: string
   ) {
     super(
@@ -134,12 +141,12 @@ export function wrapPlayFabError(
 ): PlayFabAPIError {
   if (isPlayFabError(error)) {
     const message = error.errorMessage ?? error.error ?? 'PlayFab API error occurred'
-    return new PlayFabAPIError(message, error, apiMethod)
+    return new PlayFabAPIError(message, error as PlayFabErrorDetails, apiMethod)
   }
   
   return new PlayFabAPIError(
     'An unexpected error occurred while calling PlayFab API',
-    error,
+    error as PlayFabErrorDetails,
     apiMethod
   )
 }

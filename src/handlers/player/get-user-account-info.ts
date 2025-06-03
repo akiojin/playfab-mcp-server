@@ -1,12 +1,17 @@
 import { PlayFabAdminAPI } from "../../config/playfab.js";
-import { callPlayFabApi, addCustomTags } from "../../utils/playfab-wrapper.js";
+import { callAdminAPI, addCustomTags } from "../../utils/playfab-wrapper.js";
+import { PlayFabHandler } from "../../types/index.js";
+import { GetUserAccountInfoParams, GetUserAccountInfoResult } from "../../types/handler-types.js";
 
-export async function GetUserAccountInfo(params: any) {
+export const GetUserAccountInfo: PlayFabHandler<GetUserAccountInfoParams, GetUserAccountInfoResult> = async (params) => {
   const request = addCustomTags({
-    PlayFabId: params.PlayFabId
+    PlayFabId: params.PlayFabId,
+    Username: params.Username,
+    Email: params.Email,
+    TitleDisplayName: params.TitleDisplayName
   });
   
-  const result = await callPlayFabApi(
+  const result = await callAdminAPI<PlayFabAdminModels.LookupUserAccountInfoRequest, PlayFabAdminModels.LookupUserAccountInfoResult>(
     PlayFabAdminAPI.GetUserAccountInfo,
     request,
     'GetUserAccountInfo'
@@ -14,6 +19,6 @@ export async function GetUserAccountInfo(params: any) {
   
   return {
     success: true,
-    userInfo: result.UserInfo,
+    userInfo: result.UserInfo || {} as any,
   };
-}
+};

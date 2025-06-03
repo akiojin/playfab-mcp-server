@@ -191,8 +191,10 @@ export async function retryWithPlayFabLogic<T>(
  * Creates a retry middleware for the router
  */
 export function createRetryMiddleware(options: Partial<RetryOptions> = {}) {
-  return (next: (args: any) => Promise<any>) => {
-    return async (args: any) => {
+  return <TParams = unknown, TResult = unknown>(
+    next: (args: TParams) => Promise<TResult>
+  ) => {
+    return async (args: TParams): Promise<TResult> => {
       return retryWithPlayFabLogic(() => next(args), options);
     };
   };

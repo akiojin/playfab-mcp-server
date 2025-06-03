@@ -1,18 +1,20 @@
+import { PlayFabHandler } from "../../types/index.js";
+import { CreateDraftItemParams, CreateDraftItemResult } from "../../types/handler-types.js";
 import { PlayFabEconomyAPI } from "../../config/playfab.js";
-import { callPlayFabApi, addCustomTags } from "../../utils/playfab-wrapper.js";
+import { callAdminAPI, addCustomTags } from "../../utils/playfab-wrapper.js";
 
-export async function CreateDraftItem(params: any) {
+export const CreateDraftItem: PlayFabHandler<CreateDraftItemParams, CreateDraftItemResult> = async (params) => {
   // Validate NEUTRAL title is present
-  if (!params.Item || !params.Item.Title || !params.Item.Title.NEUTRAL) {
+  if (!params.Item || !params.Item.Title || !params.Item.Title['NEUTRAL']) {
     throw new Error("Title with NEUTRAL locale is required for creating draft items");
   }
   
   const request = addCustomTags({
     Item: params.Item,
-    Publish: params.Publish
+    Publish: params.Publish || false
   });
   
-  const result = await callPlayFabApi(
+  const result = await callAdminAPI(
     PlayFabEconomyAPI.CreateDraftItem,
     request,
     'CreateDraftItem'
@@ -20,6 +22,9 @@ export async function CreateDraftItem(params: any) {
   
   return {
     success: true,
-    item: result.Item,
+    item: {
+      Id: result.Item?.Id || '',
+      ETag: result.Item?.ETag
+    },
   };
-}
+};

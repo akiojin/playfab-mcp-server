@@ -9,7 +9,7 @@ import { retryWithPlayFabLogic, PLAYFAB_RETRY_CONFIGS, RetryOptions } from './re
 const logger = createLogger('playfab-wrapper')
 
 export interface PlayFabApiCall<TRequest, TResponse> {
-  (request: TRequest, callback: (error: any, result: { data: TResponse }) => void): void
+  (request: TRequest, callback: (error: unknown, result: { data: TResponse } | null) => void): void
 }
 
 /**
@@ -42,10 +42,11 @@ export async function callPlayFabApi<TRequest, TResponse>(
           logAPICall(methodName, request, null, duration, error)
           
           // Check for rate limiting
-          if (error.code === 429 || error.errorCode === 1117) {
+          const errorObj = error as { code?: number; errorCode?: number; retryAfterSeconds?: number };
+          if (errorObj.code === 429 || errorObj.errorCode === 1117) {
             reject(new RateLimitError(
               `Rate limit exceeded for ${methodName}`,
-              error.retryAfterSeconds
+              errorObj.retryAfterSeconds
             ))
           } else {
             reject(wrapPlayFabError(error, methodName))
@@ -99,7 +100,7 @@ async function fetchEntityToken(): Promise<void> {
           mcp: 'true'
         }
       },
-      (error, result) => {
+      (error: unknown, result: { data?: { TokenExpiration?: string } } | null) => {
         if (error) {
           reject(wrapPlayFabError(error, 'GetEntityToken'))
           return
@@ -127,7 +128,7 @@ export function addCustomTags<T>(
     CustomTags: {
       mcp: 'true',
       ...tags,
-      ...((request as any).CustomTags || {})
+      ...((request as Record<string, unknown>)['CustomTags'] || {})
     }
   }
 }

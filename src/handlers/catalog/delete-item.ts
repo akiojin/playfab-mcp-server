@@ -1,7 +1,9 @@
+import { PlayFabHandler } from "../../types/index.js";
+import { DeleteItemParams, DeleteItemResult } from "../../types/handler-types.js";
 import { PlayFabEconomyAPI } from "../../config/playfab.js";
-import { callPlayFabApi, addCustomTags } from "../../utils/playfab-wrapper.js";
+import { callAdminAPI, addCustomTags } from "../../utils/playfab-wrapper.js";
 
-export async function DeleteItem(params: any) {
+export const DeleteItem: PlayFabHandler<DeleteItemParams, DeleteItemResult> = async (params) => {
   // Validate confirmation
   if (!params.ConfirmDeletion || params.ConfirmDeletion !== true) {
     throw new Error("Deletion confirmation required. Set ConfirmDeletion to true to proceed with this destructive operation.");
@@ -11,7 +13,7 @@ export async function DeleteItem(params: any) {
     Id: params.ItemId
   });
   
-  await callPlayFabApi(
+  await callAdminAPI(
     PlayFabEconomyAPI.DeleteItem,
     request,
     'DeleteItem'
@@ -21,4 +23,4 @@ export async function DeleteItem(params: any) {
     success: true,
     message: `Item ${params.ItemId} has been permanently deleted from the catalog and all player inventories.`
   };
-}
+};

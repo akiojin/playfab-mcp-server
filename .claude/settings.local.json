@@ -40,7 +40,11 @@
       "Bash(touch:*)",
       "Bash(pip install:*)",
       "Bash(python:*)",
-      "Bash(sed:*)"
+      "Bash(sed:*)",
+      "Bash(/Users/akio-jinsenji/.nodebrew/node/v20.9.0/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg \"SetTitleData\" node_modules/playfab-sdk/Scripts/typings/PlayFab/PlayFabAdmin.d.ts -A 2 -B 2)",
+      "Bash(/Users/akio-jinsenji/.nodebrew/node/v20.9.0/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg \"interface SetTitleDataRequest\" node_modules/playfab-sdk/Scripts/typings/PlayFab/PlayFabAdmin.d.ts -A 10)",
+      "Bash(/Users/akio-jinsenji/.nodebrew/node/v20.9.0/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg \"interface SetTitleDataAndOverridesRequest\" node_modules/playfab-sdk/Scripts/typings/PlayFab/PlayFabAdmin.d.ts -A 10)",
+      "Bash(/Users/akio-jinsenji/.nodebrew/node/v20.9.0/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg \"interface TitleDataKeyValue\" node_modules/playfab-sdk/Scripts/typings/PlayFab/PlayFabAdmin.d.ts -A 5)"
     ]
   },
   "enableAllProjectMcpServers": false

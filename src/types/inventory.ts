@@ -5,8 +5,8 @@
 export interface InventoryItem {
   Id: string
   StackId?: string
-  DisplayProperties?: Record<string, any>
-  [key: string]: any
+  DisplayProperties?: Record<string, unknown>
+  [key: string]: unknown
 }
 
 export interface InventoryItemReference {

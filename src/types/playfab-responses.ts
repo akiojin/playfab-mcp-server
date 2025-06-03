@@ -26,14 +26,14 @@ export interface CatalogItem {
     Value: string;
   }>;
   Description?: Record<string, string>;
-  DisplayProperties?: any;
+  DisplayProperties?: Record<string, unknown>;
   DisplayVersion?: string;
   ETag?: string;
   IsHidden?: boolean;
   ItemReferences?: Array<{
     Amount?: number;
     Id: string;
-    PriceOptions?: any;
+    PriceOptions?: Record<string, unknown>;
   }>;
   Keywords?: Record<string, any>;
   Moderation?: {
@@ -48,7 +48,7 @@ export interface CatalogItem {
     }>;
     UnitDurationInSeconds?: number;
   }>;
-  PurchasabilitySettings?: any;
+  PurchasabilitySettings?: Record<string, unknown>;
   Rating?: {
     Average?: number;
     Count1Star?: number;
@@ -106,7 +106,7 @@ export interface CatalogConfigItem {
   IsHidden?: boolean;
   ContentType?: string;
   Tags?: string[];
-  DisplayProperties?: any;
+  DisplayProperties?: Record<string, unknown>;
   DisplayPropertyIndexInfos?: DisplayPropertyIndexInfo[];
   Platforms?: string[];
 }
@@ -139,7 +139,7 @@ export interface InventoryItem {
   Id?: string;
   Type?: string;
   Amount?: number;
-  DisplayProperties?: any;
+  DisplayProperties?: Record<string, unknown>;
   ExpirationDate?: string;
   StackId?: string;
 }
@@ -155,7 +155,7 @@ export interface InventoryOperation {
       };
       Id?: string;
     };
-    NewStackValues?: any;
+    NewStackValues?: Record<string, unknown>;
   };
   Delete?: {
     Item: {
@@ -178,7 +178,7 @@ export interface InventoryOperation {
       };
       Id?: string;
     };
-    NewStackValues?: any;
+    NewStackValues?: Record<string, unknown>;
     PriceAmounts: Array<{
       ItemId: string;
       Amount: number;
@@ -222,7 +222,7 @@ export interface InventoryOperation {
       Id?: string;
       StackId?: string;
     };
-    NewStackValues?: any;
+    NewStackValues?: Record<string, unknown>;
   };
 }
 

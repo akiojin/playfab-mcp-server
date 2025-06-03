@@ -45,7 +45,7 @@ export type HandlerResponse<T = unknown> = SuccessResponse<T> | ErrorResponse
 
 export type PlayFabHandler<TParams = HandlerParams, TResponse = unknown> = (
   params: TParams
-) => Promise<HandlerResponse<TResponse>>
+) => Promise<TResponse & { success: boolean }>
 
 // Specific parameter types for common patterns
 export interface SearchParams extends PaginatedRequest {

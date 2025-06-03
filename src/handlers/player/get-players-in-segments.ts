@@ -1,10 +1,17 @@
 import { PlayFabAdminAPI } from "../../config/playfab.js";
-import { callPlayFabApi, addCustomTags } from "../../utils/playfab-wrapper.js";
+import { callAdminAPI, addCustomTags } from "../../utils/playfab-wrapper.js";
+import { PlayFabHandler } from "../../types/index.js";
+import { GetPlayersInSegmentsParams, GetPlayersInSegmentsResult } from "../../types/handler-types.js";
 
-export async function GetPlayersInSegments(params: any) {
-  const request = addCustomTags(params);
+export const GetPlayersInSegments: PlayFabHandler<GetPlayersInSegmentsParams, GetPlayersInSegmentsResult> = async (params) => {
+  const request = addCustomTags({
+    SegmentId: params.SegmentId,
+    SecondsToLive: params.SecondsToLive,
+    MaxBatchSize: params.MaxBatchSize,
+    ContinuationToken: params.ContinuationToken
+  });
   
-  const result = await callPlayFabApi(
+  const result = await callAdminAPI<PlayFabAdminModels.GetPlayersInSegmentRequest, PlayFabAdminModels.GetPlayersInSegmentResult>(
     PlayFabAdminAPI.GetPlayersInSegment,
     request,
     'GetPlayersInSegment'
@@ -12,8 +19,8 @@ export async function GetPlayersInSegments(params: any) {
   
   return {
     success: true,
-    players: result.PlayerProfiles,
+    playerProfiles: result.PlayerProfiles || [],
     continuationToken: result.ContinuationToken,
-    profilesInSegment: result.ProfilesInSegment
+    profilesInSegment: result.ProfilesInSegment || 0
   };
-}
+};
