@@ -62,7 +62,7 @@
     "@eslint/js": "^9.28.0",
     "@types/dotenv": "^8.2.3",
     "@types/jest": "^29.5.14",
-    "@types/node": "^22.15.26",
+    "@types/node": "^24.3.0",
     "@types/pino": "^7.0.4",
     "@types/pino-pretty": "^4.7.5",
     "@typescript-eslint/eslint-plugin": "^8.33.0",
