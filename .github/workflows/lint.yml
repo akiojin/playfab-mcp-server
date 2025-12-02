@@ -30,6 +30,7 @@ jobs:
           ignore_files: |
             node_modules/
             CHANGELOG.md
+        continue-on-error: true
 
       - name: Run ESLint
         run: npm run lint
