@@ -1,5 +1,12 @@
 # PlayFab MCP サーバー進捗管理
 
+## 本日のタスク（2025-12-02）
+
+- [x] smithery.yaml を削除（Spec Kit 非対応設定の除去）
+- [x] Dockerfile を gwt 版に合わせて pnpm/bun/uv/gh を導入
+- [ ] release-please のリリース PR を再実行し main へマージ
+- [ ] main の最新を develop に反映
+
 ## 改善タスク一覧（元の要件）
 
 ### 🚨 優先度: 緊急（1週間以内）- 完了済み

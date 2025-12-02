@@ -9,15 +9,26 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# 開発支援ツール（npmベース）
-RUN npm install -g \
+# グローバルツール（pnpm/bun/TypeScript/commitlint など）
+RUN npm add -g \
+    pnpm@latest \
+    bun@latest \
     typescript@latest \
     eslint@latest \
     prettier@latest \
     @commitlint/cli@latest \
     @commitlint/config-conventional@latest
 
-# uv/uvx (Spec Kit CLI用)
+# pnpm のグローバルインストール先を PATH に追加
+ENV PNPM_HOME="/root/.local/share/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+
+RUN mkdir -p "$PNPM_HOME" && \
+    pnpm config set global-bin-dir "$PNPM_HOME" && \
+    echo 'export PNPM_HOME="/root/.local/share/pnpm"' >> /root/.bashrc && \
+    echo 'export PATH="$PNPM_HOME:$PATH"' >> /root/.bashrc
+
+# uv/uvx (Spec Kit CLI 用)
 RUN curl -fsSL https://astral.sh/uv/install.sh | bash
 ENV PATH="/root/.cargo/bin:${PATH}"
 
