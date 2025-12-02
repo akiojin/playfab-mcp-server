@@ -15,7 +15,9 @@ const LOG_LEVELS = {
 const logLevel = LOG_LEVELS[getEnvironmentName() as keyof typeof LOG_LEVELS] || 'info';
 
 // Create logger instance
-export const logger = pino({
+// MCP仕様: stdoutはMCPメッセージ専用、ログはstderrに出力する必要がある
+// See: https://modelcontextprotocol.io/specification/2025-06-18/basic/transports
+const loggerOptions: pino.LoggerOptions = {
   level: logLevel,
   timestamp: pino.stdTimeFunctions.isoTime,
   formatters: {
@@ -45,9 +47,15 @@ export const logger = pino({
       colorize: true,
       ignore: 'pid,hostname',
       translateTime: 'HH:MM:ss.l',
+      destination: 2, // stderr (MCP仕様準拠)
     },
   } : undefined,
-});
+};
+
+// 本番環境ではtransportを使用しないため、直接stderrを指定
+export const logger = isDevelopment()
+  ? pino(loggerOptions)
+  : pino(loggerOptions, pino.destination(2)); // 2 = stderr
 
 // Create child loggers for different modules
 export const createLogger = (module: string) => {
