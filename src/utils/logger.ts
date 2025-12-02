@@ -53,9 +53,10 @@ const loggerOptions: pino.LoggerOptions = {
 };
 
 // 本番環境ではtransportを使用しないため、直接stderrを指定
+const stderrDestination = (pino as any).destination ? (pino as any).destination(2) : undefined;
 export const logger = isDevelopment()
   ? pino(loggerOptions)
-  : pino(loggerOptions, pino.destination(2)); // 2 = stderr
+  : pino(loggerOptions, stderrDestination); // 2 = stderr
 
 // Create child loggers for different modules
 export const createLogger = (module: string) => {
