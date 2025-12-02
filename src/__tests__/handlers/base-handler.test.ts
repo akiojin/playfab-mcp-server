@@ -135,19 +135,19 @@ describe('BaseHandler', () => {
     it('should log info messages', () => {
       const handler = new TestHandler();
       const logSpy = jest.spyOn(handler['context'].logger, 'info');
-      
+
       handler['logInfo']('Test message', { data: 'test' });
-      
-      expect(logSpy).toHaveBeenCalledWith('Test message', { data: 'test' });
+
+      expect(logSpy).toHaveBeenCalledWith({ data: 'test' }, 'Test message');
     });
-    
+
     it('should log error messages', () => {
       const handler = new TestHandler();
       const logSpy = jest.spyOn(handler['context'].logger, 'error');
-      
+
       handler['logError']('Error message', new Error('test error'));
-      
-      expect(logSpy).toHaveBeenCalledWith('Error message', { error: expect.any(Error) });
+
+      expect(logSpy).toHaveBeenCalledWith({ error: expect.any(Error) }, 'Error message');
     });
   });
   
