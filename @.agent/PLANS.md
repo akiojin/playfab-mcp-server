@@ -140,6 +140,7 @@
 - [x] **リリースフロー移植（gwt方式）**（release-please、prepare/release/publishワークフロー適用、smithery削除）
 - [x] **Spec Kit導入とドキュメント反映**
 - [x] **Docker/Docker Compose整備（gwt準拠の開発環境）**
+- [x] **gwt版GitHub設定/.claudeコマンド・フックのコピー**（2025/12/02）
 - [x] **38ファイルのany型解消**（完了）
   - [x] router.ts、errors.ts、playfab-wrapper.ts、retry.tsのany型修正
   - [x] titleハンドラー5ファイルのany型修正
