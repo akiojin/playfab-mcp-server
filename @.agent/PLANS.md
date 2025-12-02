@@ -6,6 +6,8 @@
 - [x] Dockerfile を gwt 版に合わせて pnpm/bun/uv/gh を導入
 - [x] release-please のリリース PR を再実行し main へマージ
 - [x] main の最新を develop に反映
+- [x] main/develop ブランチ保護に Required Checks を追加（Lint/Test/CommitLint/Build）
+- [x] main/develop ブランチ保護に Required Checks を追加（Lint/Test/CommitLint/Build）
 
 ## 改善タスク一覧（元の要件）
 
