@@ -1,0 +1,32 @@
+services:
+  playfab-mcp-server:
+    build: .
+    container_name: playfab-mcp-server
+    volumes:
+      - .:/playfab-mcp-server
+      - bash-history:/root/.bash_history_dir
+      - ./.docker/bash_history:/root/.bash_history
+      - claude-config:/root/.claude
+      - codex-config:/root/.codex
+      - ${HOME:-~}/.codex:/root/.codex-host:ro
+    environment:
+      - PLAYFAB_TITLE_ID
+      - PLAYFAB_DEV_SECRET_KEY
+      - GITHUB_TOKEN
+      - GITHUB_PERSONAL_ACCESS_TOKEN
+      - GITHUB_USERNAME
+      - GIT_USER_EMAIL
+      - HISTFILE=/root/.bash_history_dir/.bash_history
+      - HISTSIZE=100000
+      - HISTFILESIZE=100000
+      - MAX_MCP_OUTPUT_TOKENS
+      - ENABLE_BACKGROUND_TASKS=1
+      - FORCE_AUTO_BACKGROUND_TASKS=1
+    stdin_open: true
+    tty: true
+    working_dir: /playfab-mcp-server
+
+volumes:
+  bash-history: {}
+  claude-config: {}
+  codex-config: {}

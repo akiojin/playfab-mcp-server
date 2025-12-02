@@ -1,7 +1,5 @@
 # PlayFab MCP Server
 
-[![smithery badge](https://smithery.ai/badge/@akiojin/playfab-mcp-server)](https://smithery.ai/server/@akiojin/playfab-mcp-server)
-
 ## What Is This? 🤔
 
 This server is a middleware that enables large language models (like Claude and VS Code) to interact directly with PlayFab services. Acting as a secure and efficient translator, it connects your AI assistant with various PlayFab functionalities, such as item search, segment inquiries, player profile lookups, inventory management, and PlayFab ID conversion.
@@ -77,14 +75,6 @@ Follow these steps to get started:
 - Retrieve internal data with the get_title_internal_data API.
 
 ## Quick Start 🚀
-
-### Installing via Smithery
-
-To install PlayFab MCP Server for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@akiojin/playfab-mcp-server):
-
-```bash
-npx -y @smithery/cli install @akiojin/playfab-mcp-server --client claude
-```
 
 ### Prerequisites
 
@@ -190,6 +180,32 @@ This project uses TypeScript with strict mode enabled, ensuring:
 
 Tests are written using Jest and can be found in `__tests__` directories or files with `.test.ts` extension. Run tests before committing changes to ensure code quality.
 
+### Spec-Driven Development (Spec Kit, JP)
+
+- Install CLI: `uv tool install specify-cli --from git+https://github.com/akiojin/spec-kit.git`
+- Create spec/plan/tasks: `./.specify/scripts/bash/create-new-feature.sh "feature summary"`（デフォルトはブランチを作成しない。必要なら `--branch`）
+- Assets: `.specify/templates/*`, `.specify/scripts/bash/*`, specs under `specs/`
+- Claude/Codex slash commands: `/speckit.constitution`, `/speckit.specify`, `/speckit.plan`, `/speckit.tasks`, `/speckit.implement`
+
+### Docker Development Environment
+
+The repository ships with a lightweight dev container (Node 22, tooling, GitHub CLI).
+
+```bash
+# Build image
+docker compose build
+
+# Open a shell inside the container
+docker compose run --rm playfab-mcp-server bash
+
+# Inside the container
+npm ci
+npm run build
+npm start
+```
+
+Volumes keep your workspace (`.`), Codex/Claude configs, and shell history. Set `PLAYFAB_TITLE_ID` / `PLAYFAB_DEV_SECRET_KEY` in the container env when running the server.
+
 ### Running with Cursor
 
 To use the PlayFab MCP server with Cursor, follow these steps:
@@ -223,6 +239,17 @@ Open Claude Desktop and navigate to File → Settings → Developer → Edit Con
 ```
 
 With these steps, you have successfully configured the PlayFab MCP server for use with your LLM client, allowing seamless interaction with PlayFab's services.
+
+## Spec-Driven Development with Spec Kit
+
+This repository follows the Spec Kit SDD/TDD workflow used in `akiojin/gwt`.
+
+- Requirements: Python 3.11+ and `uv`
+- Install CLI: `uv tool install specify-cli --from git+https://github.com/akiojin/spec-kit.git`
+- Assets: templates under `.specify/templates`, scripts under `.specify/scripts/bash`, specs live in `specs/`
+- Create a new spec/plan: `./.specify/scripts/bash/create-new-feature.sh "feature summary"` (add `--branch` if you also want a branch)
+- Generated files include `spec.md`, `plan.md`, `tasks.md`; keep them reviewed/committed alongside code
+- Claude/Codex slash commands (if available): `/speckit.constitution`, `/speckit.specify`, `/speckit.plan`, `/speckit.tasks`, `/speckit.implement`
 
 ## Contributing
 
@@ -261,47 +288,20 @@ This project follows [Conventional Commits](https://www.conventionalcommits.org/
 - **PATCH** version: When commit type is `fix`
   - Example: `fix: correct error handling in API calls`
 
-### Release Process
+### Release Process (develop → main, release-please)
 
-#### 1. Update Version and Changelog
+1. **Prepare release PR**: Run the `prepare-release.yml` workflow to open a PR from `develop` to `main`  
+   - Actions UI: `Prepare Release` → run with ref `develop`  
+   - CLI: `gh workflow run prepare-release.yml --ref develop`  
+   - If a PR from `develop` already exists, it will be reused; PRs opened from `develop` can be auto-merged by the workflow.
+2. **Release automation**: When `main` is updated, `release.yml` runs release-please (manifest) to bump versions, update `CHANGELOG.md`, and create the GitHub Release/tag.
+3. **Publish**: Tag push `v*` triggers `publish.yml` to run tests, build, typecheck, and `npm publish --access public`.
 
-```bash
-# Analyze commits and update CHANGELOG.md
-# Then bump version based on changes:
-npm version patch  # or minor/major
-```
+Required secrets:
+- `PERSONAL_ACCESS_TOKEN` (optional; used by `prepare-release`/`release` when provided, falls back to `GITHUB_TOKEN`)
+- `NPM_TOKEN` (for `publish.yml`)
 
-#### 2. Push Changes and Tag
-
-```bash
-# Push the version commit
-git push origin main
-
-# Push the version tag created by npm version
-git push origin --tags
-```
-
-#### 3. Automatic Release & Publish
-
-When a `v*` tag is pushed, the `release-and-publish.yml` workflow automatically:
-
-- Creates a GitHub Release with release notes
-- Publishes the package to npm
-- Attaches release assets
-
-#### Repository Prerequisites
-
-- `NPM_TOKEN` secret must be set in repository settings for npm publishing
-- `DEPENDABOT_PAT` secret must be set for auto-approving Dependabot PRs:
-  1. Create a Personal Access Token (PAT) with `repo` and `workflow` permissions
-  2. Go to Settings → Secrets and variables → Actions
-  3. Add a new secret named `DEPENDABOT_PAT` with your PAT value
-- Branch protection rules must be configured for auto-merge to work:
-  1. Go to Settings → Branches
-  2. Add rule for `main` branch
-  3. Enable "Require a pull request before merging"
-  4. Enable "Require status checks to pass before merging"
-  5. Add required status checks: `build (18.x)`, `build (20.x)`, `build (22.x)`
+Branch protection: keep protections on `main`; release PRs should satisfy required checks before merge.
 
 ### Scripts Reference
 
