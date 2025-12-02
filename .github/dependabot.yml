@@ -1,63 +1,18 @@
 version: 2
+
+# Dependabot はデフォルトでは Conventional Commits を満たさない
+# (例: "Bump foo from 1.0.0 to 1.0.1") ため commitlint に弾かれる。
+# commit-message 設定で `chore(deps): ...` 形式に統一し、CI の commitlint を通過させる。
 updates:
-  # Enable version updates for npm
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "weekly"
-      day: "monday"
-      time: "04:00"
-    open-pull-requests-limit: 10
-    reviewers:
-      - "akiojin"
-    assignees:
-      - "akiojin"
-    labels:
-      - "dependencies"
-      - "npm"
     commit-message:
       prefix: "chore"
       prefix-development: "chore"
-      include: "scope"
-    pull-request-branch-name:
-      separator: "-"
-    # Group patch updates together
-    groups:
-      patch-updates:
-        patterns:
-          - "*"
-        update-types:
-          - "patch"
-    
-  # Enable security updates for npm
-  - package-ecosystem: "npm"
-    directory: "/"
-    schedule:
-      interval: "daily"
-      time: "04:00"
-    open-pull-requests-limit: 10
-    target-branch: "main"
-    labels:
-      - "security"
-      - "npm"
-    commit-message:
-      prefix: "security"
-    
-  # Keep GitHub Actions up to date
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "04:00"
-    open-pull-requests-limit: 10
-    reviewers:
-      - "akiojin"
-    assignees:
-      - "akiojin"
+      include: "scope" # → chore(deps): bump ... / chore(deps-dev): bump ...
     labels:
       - "dependencies"
-      - "github-actions"
-    commit-message:
-      prefix: "ci"
-      include: "scope"
+      - "automerge"
+    open-pull-requests-limit: 10
