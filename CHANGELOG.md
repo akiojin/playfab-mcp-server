@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0](https://github.com/akiojin/playfab-mcp-server/compare/v1.0.0...v1.1.0) (2025-12-03)
+
+
+### Features
+
+* **skills:** Claude Code向けSkillsをプロジェクトに追加 ([1a20b42](https://github.com/akiojin/playfab-mcp-server/commit/1a20b42dfad9b383ea13ac6721c21693595e1779))
+* **skills:** Claude Code向けSkillsをプロジェクトに追加 ([96cf529](https://github.com/akiojin/playfab-mcp-server/commit/96cf5290cfc2dfb7bb0e2f6bd404c73589b5a8fb))
+
+
+### Bug Fixes
+
+* **deps:** MCP SDKと脆弱性パッケージを更新 ([00aa052](https://github.com/akiojin/playfab-mcp-server/commit/00aa05227a63e0cabec69ef7bdf893c809b8c275))
+
 ## 1.0.0 (2025-12-02)
 
 
