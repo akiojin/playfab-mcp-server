@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+npm run lint || exit 1
+npm run typecheck || exit 1
+npm test -- --runInBand || exit 1

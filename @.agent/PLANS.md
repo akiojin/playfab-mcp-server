@@ -8,6 +8,7 @@
 - [x] main の最新を develop に反映
 - [x] main/develop ブランチ保護に Required Checks を追加（Lint/Test/CommitLint/Build）
 - [x] MCP SDKと依存の脆弱性を更新（@modelcontextprotocol/sdk 1.24.0、body-parser/brace-expansion/pluginkitを override）
+- [x] Husky の pre-commit/commit-msg で CI 相当の lint/typecheck/test と commitlint をローカル適用
 - [x] main/develop ブランチ保護に Required Checks を追加（Lint/Test/CommitLint/Build）
 
 ## 改善タスク一覧（元の要件）
