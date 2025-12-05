@@ -37,18 +37,14 @@ export abstract class BaseHandler<TParams, TResult> {
    * Helper method to log info
    */
   protected logInfo(message: string, data?: unknown): void {
-    if (data !== undefined) {
-      this.context.logger.info(data as object, message);
-    } else {
-      this.context.logger.info(message);
-    }
+    this.context.logger.info(message, data);
   }
 
   /**
    * Helper method to log errors
    */
   protected logError(message: string, error?: unknown): void {
-    this.context.logger.error({ error }, message);
+    this.context.logger.error(message, { error });
   }
   
   /**

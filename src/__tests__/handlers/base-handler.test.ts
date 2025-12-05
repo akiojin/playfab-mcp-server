@@ -138,7 +138,7 @@ describe('BaseHandler', () => {
 
       handler['logInfo']('Test message', { data: 'test' });
 
-      expect(logSpy).toHaveBeenCalledWith({ data: 'test' }, 'Test message');
+      expect(logSpy).toHaveBeenCalledWith('Test message', { data: 'test' });
     });
 
     it('should log error messages', () => {
@@ -147,7 +147,7 @@ describe('BaseHandler', () => {
 
       handler['logError']('Error message', new Error('test error'));
 
-      expect(logSpy).toHaveBeenCalledWith({ error: expect.any(Error) }, 'Error message');
+      expect(logSpy).toHaveBeenCalledWith('Error message', { error: expect.any(Error) });
     });
   });
   

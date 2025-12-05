@@ -4,7 +4,7 @@
  */
 
 import { container, TOKENS } from '../utils/container.js';
-import { createLogger, logger } from '../utils/logger.js';
+import { createLogger, type Logger } from '../utils/logger.js';
 import { router } from '../utils/router.js';
 import { PlayFab, PlayFabAdminAPI, PlayFabEconomyAPI, PlayFabServerAPI, PlayFabAuthenticationAPI, PlayFabProfileAPI } from '../config/playfab.js';
 
@@ -45,7 +45,7 @@ export function setupDependencies(config?: Partial<AppConfig>): void {
   // Register core services
   container
     .value(TOKENS.Config, appConfig)
-    .singleton(TOKENS.Logger, () => logger)
+    .singleton(TOKENS.Logger, () => createLogger('app'))
     .singleton(TOKENS.Router, () => router);
   
   // Register PlayFab API clients
