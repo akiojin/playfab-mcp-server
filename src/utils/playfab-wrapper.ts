@@ -6,7 +6,7 @@ import { wrapPlayFabError, RateLimitError } from './errors.js'
 import { logAPICall, createLogger } from './logger.js'
 import { retryWithPlayFabLogic, PLAYFAB_RETRY_CONFIGS, RetryOptions } from './retry.js'
 
-const logger = createLogger('playfab-wrapper')
+const getLogger = () => createLogger('playfab-wrapper')
 
 export interface PlayFabApiCall<TRequest, TResponse> {
   (request: TRequest, callback: (error: unknown, result: { data: TResponse } | null) => void): void
@@ -32,7 +32,7 @@ export async function callPlayFabApi<TRequest, TResponse>(
   
   return retryWithPlayFabLogic(async () => {
     const startTime = Date.now()
-    logger.debug({ method: methodName }, `Calling PlayFab API: ${methodName}`)
+    getLogger().debug(`Calling PlayFab API: ${methodName}`, { method: methodName })
     
     return new Promise<TResponse>((resolve, reject) => {
       apiMethod(request, (error, result) => {

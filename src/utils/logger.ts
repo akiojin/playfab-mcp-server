@@ -1,171 +1,134 @@
 /**
- * Logging utility using Pino
+ * MCP SDK Logging utility
+ * Uses server.sendLoggingMessage to send logs to MCP clients
  */
-import pino from 'pino';
-import { isDevelopment, getEnvironmentName } from './env-validator.js';
+import type { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import type { LoggingLevel } from "@modelcontextprotocol/sdk/types.js";
 
-// Define log levels
-const LOG_LEVELS = {
-  production: 'info',
-  development: 'debug',
-  test: 'warn',
-} as const;
+let serverInstance: Server | null = null;
 
-// Get log level based on environment
-const logLevel = LOG_LEVELS[getEnvironmentName() as keyof typeof LOG_LEVELS] || 'info';
-
-// Create logger instance
-// MCP仕様: stdoutはMCPメッセージ専用、ログはstderrに出力する必要がある
-// See: https://modelcontextprotocol.io/specification/2025-06-18/basic/transports
-const loggerOptions: pino.LoggerOptions = {
-  level: logLevel,
-  timestamp: pino.stdTimeFunctions.isoTime,
-  formatters: {
-    level: (label) => {
-      return { level: label };
-    },
-  },
-  redact: {
-    paths: [
-      'PLAYFAB_DEV_SECRET_KEY',
-      'EntityToken',
-      'SessionTicket',
-      'Password',
-      'Email',
-      'req.headers.authorization',
-      'res.headers["set-cookie"]',
-      '*.password',
-      '*.secret',
-      '*.token',
-      '*.key',
-    ],
-    remove: true,
-  },
-  transport: isDevelopment() ? {
-    target: 'pino-pretty',
-    options: {
-      colorize: true,
-      ignore: 'pid,hostname',
-      translateTime: 'HH:MM:ss.l',
-      destination: 2, // stderr (MCP仕様準拠)
-    },
-  } : undefined,
-};
-
-// 本番環境ではtransportを使用しないため、直接stderrを指定
-const stderrDestination = (pino as any).destination ? (pino as any).destination(2) : undefined;
-export const logger = isDevelopment()
-  ? pino(loggerOptions)
-  : pino(loggerOptions, stderrDestination); // 2 = stderr
-
-// Create child loggers for different modules
-export const createLogger = (module: string) => {
-  return logger.child({ module });
-};
-
-// Request logging middleware
-export interface LogContext {
-  requestId?: string;
-  method?: string;
-  userId?: string;
-  entityId?: string;
-  titleId?: string;
-  [key: string]: unknown;
+/**
+ * Set the MCP server instance for logging
+ */
+export function setServer(server: Server): void {
+  serverInstance = server;
 }
 
-export const createRequestLogger = (context: LogContext) => {
-  return logger.child({ ...context });
-};
+/**
+ * Get the current server instance (for testing)
+ */
+export function getServer(): Server | null {
+  return serverInstance;
+}
 
-// Performance logging helper
+/**
+ * Create a logger for a specific module
+ */
+export function createLogger(module: string) {
+  const log = (level: LoggingLevel, message: string, data?: unknown) => {
+    if (!serverInstance) return;
+    serverInstance.sendLoggingMessage({
+      level,
+      logger: module,
+      data: data !== undefined ? { message, ...(typeof data === 'object' && data !== null ? data : { value: data }) } : message,
+    }).catch(() => {
+      // Silently ignore logging errors
+    });
+  };
+
+  return {
+    debug: (message: string, data?: unknown) => log("debug", message, data),
+    info: (message: string, data?: unknown) => log("info", message, data),
+    warn: (message: string, data?: unknown) => log("warning", message, data),
+    error: (message: string, data?: unknown) => log("error", message, data),
+    fatal: (message: string, data?: unknown) => log("emergency", message, data),
+  };
+}
+
+/**
+ * Logger type for external use
+ */
+export type Logger = ReturnType<typeof createLogger>;
+
+/**
+ * Performance logging helper
+ */
 export class PerformanceLogger {
   private startTime: number;
-  private logger: pino.Logger;
+  private operationName: string;
+  private logger: Logger;
 
-  constructor(operationName: string, logger: pino.Logger = createLogger('performance')) {
+  constructor(operationName: string, module = "performance") {
     this.startTime = Date.now();
-    this.logger = logger;
-    this.logger.debug({ operation: operationName }, 'Operation started');
+    this.operationName = operationName;
+    this.logger = createLogger(module);
+    this.logger.debug(`Operation started: ${operationName}`);
   }
 
   end(additionalData?: Record<string, unknown>): void {
     const duration = Date.now() - this.startTime;
-    this.logger.info({
+    this.logger.info(`Operation completed: ${this.operationName}`, {
       duration_ms: duration,
       ...additionalData,
-    }, 'Operation completed');
+    });
   }
 
   error(error: unknown, additionalData?: Record<string, unknown>): void {
     const duration = Date.now() - this.startTime;
-    this.logger.error({
+    this.logger.error(`Operation failed: ${this.operationName}`, {
       duration_ms: duration,
-      error: error instanceof Error ? {
-        message: error.message,
-        name: error.name,
-        stack: isDevelopment() ? error.stack : undefined,
-      } : error,
+      error: error instanceof Error ? { message: error.message, name: error.name } : error,
       ...additionalData,
-    }, 'Operation failed');
+    });
   }
 }
 
-// Structured logging helpers
-export const logAPICall = (
+/**
+ * Log PlayFab API calls
+ */
+export function logAPICall(
   method: string,
-  request: unknown,
-  response: unknown,
+  _request: unknown,
+  _response: unknown,
   duration: number,
   error?: unknown
-) => {
-  const log = createLogger('api');
-  
+): void {
+  const logger = createLogger("api");
   if (error) {
-    log.error({
+    logger.error(`PlayFab API call failed: ${method}`, {
       method,
-      request: isDevelopment() ? request : undefined,
-      error: error instanceof Error ? {
-        message: error.message,
-        code: (error as any).code,
-      } : error,
       duration_ms: duration,
-    }, `PlayFab API call failed: ${method}`);
+      error: error instanceof Error ? { message: error.message } : error,
+    });
   } else {
-    log.info({
+    logger.info(`PlayFab API call succeeded: ${method}`, {
       method,
-      request: isDevelopment() ? request : undefined,
-      response: isDevelopment() ? response : undefined,
       duration_ms: duration,
-    }, `PlayFab API call succeeded: ${method}`);
+    });
   }
-};
+}
 
-// Log MCP tool calls
-export const logToolCall = (
+/**
+ * Log MCP tool calls
+ */
+export function logToolCall(
   toolName: string,
-  args: unknown,
-  result: unknown,
+  _args: unknown,
+  _result: unknown,
   duration: number,
   error?: unknown
-) => {
-  const log = createLogger('mcp');
-  
+): void {
+  const logger = createLogger("mcp");
   if (error) {
-    log.error({
+    logger.error(`MCP tool call failed: ${toolName}`, {
       tool: toolName,
-      args: isDevelopment() ? args : undefined,
-      error: error instanceof Error ? {
-        message: error.message,
-        stack: isDevelopment() ? error.stack : undefined,
-      } : error,
       duration_ms: duration,
-    }, `MCP tool call failed: ${toolName}`);
+      error: error instanceof Error ? { message: error.message } : error,
+    });
   } else {
-    log.debug({
+    logger.debug(`MCP tool call completed: ${toolName}`, {
       tool: toolName,
-      args: isDevelopment() ? args : undefined,
-      result: isDevelopment() ? result : undefined,
       duration_ms: duration,
-    }, `MCP tool call completed: ${toolName}`);
+    });
   }
-};
+}

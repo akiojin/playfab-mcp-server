@@ -28,10 +28,8 @@ import * as catalogHandlers from "./handlers/catalog/index.js";
 import * as inventoryHandlers from "./handlers/inventory/index.js";
 import * as playerHandlers from "./handlers/player/index.js";
 import * as titleHandlers from "./handlers/title/index.js";
-import { createLogger, logToolCall, PerformanceLogger } from "./utils/logger.js";
+import { setServer, createLogger, logToolCall, PerformanceLogger } from "./utils/logger.js";
 import { router } from "./utils/router.js";
-
-const logger = createLogger('server');
 
 // Register all handlers
 router.registerBatch({
@@ -83,6 +81,7 @@ export const server = new Server(
   {
     capabilities: {
       tools: {},
+      logging: {},
     },
   },
 )
@@ -178,8 +177,14 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 })
 
 export async function runServer() {
-  logger.info('Starting PlayFab MCP Server...')
-  const transport = new StdioServerTransport()
-  await server.connect(transport)
-  logger.info('PlayFab MCP Server running on stdio')
+  // Set server instance for logging
+  setServer(server);
+
+  const logger = createLogger('server');
+  logger.info('Starting PlayFab MCP Server...');
+
+  const transport = new StdioServerTransport();
+  await server.connect(transport);
+
+  logger.info('PlayFab MCP Server running on stdio');
 }

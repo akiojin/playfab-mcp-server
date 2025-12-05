@@ -3,7 +3,7 @@
  */
 import { createLogger } from './logger.js';
 
-const logger = createLogger('router');
+const getLogger = () => createLogger('router');
 
 export type ToolHandler<TParams = unknown, TResult = unknown> = (args: TParams) => Promise<TResult>;
 
@@ -24,11 +24,11 @@ export class ToolRouter {
     description?: string
   ): void {
     if (this.routes.has(name)) {
-      logger.warn({ tool: name }, `Overwriting existing handler for tool: ${name}`);
+      getLogger().warn(`Overwriting existing handler for tool: ${name}`, { tool: name });
     }
-    
+
     this.routes.set(name, { handler: handler as ToolHandler<unknown, unknown>, description });
-    logger.debug({ tool: name, description }, `Registered handler for tool: ${name}`);
+    getLogger().debug(`Registered handler for tool: ${name}`, { tool: name, description });
   }
 
   /**
@@ -71,12 +71,12 @@ export class ToolRouter {
       throw new Error(`Unknown tool: ${name}`);
     }
 
-    logger.debug({ tool: name, hasArgs: !!args }, `Executing handler for tool: ${name}`);
-    
+    getLogger().debug(`Executing handler for tool: ${name}`, { tool: name, hasArgs: !!args });
+
     try {
       return await route.handler(args) as TResult;
     } catch (error) {
-      logger.error({ tool: name, error }, `Handler failed for tool: ${name}`);
+      getLogger().error(`Handler failed for tool: ${name}`, { tool: name, error });
       throw error;
     }
   }
@@ -103,7 +103,7 @@ export class ToolRouter {
    */
   clear(): void {
     this.routes.clear();
-    logger.debug('Cleared all routes');
+    getLogger().debug('Cleared all routes');
   }
 
   /**
@@ -124,9 +124,9 @@ export const withLogging = <TParams = unknown, TResult = unknown>(
   next: ToolHandler<TParams, TResult>
 ): ToolHandler<TParams, TResult> => {
   return async (args: TParams) => {
-    logger.debug({ args }, 'Middleware: withLogging - before');
+    getLogger().debug('Middleware: withLogging - before', { args });
     const result = await next(args);
-    logger.debug({ result }, 'Middleware: withLogging - after');
+    getLogger().debug('Middleware: withLogging - after', { result });
     return result;
   };
 };

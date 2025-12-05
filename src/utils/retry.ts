@@ -4,7 +4,7 @@
 import { PlayFabAPIError, RateLimitError, AuthenticationError } from './errors.js';
 import { createLogger } from './logger.js';
 
-const logger = createLogger('retry');
+const getLogger = () => createLogger('retry');
 
 export interface RetryOptions {
   maxRetries: number;
@@ -126,23 +126,23 @@ export async function retryWithPlayFabLogic<T>(
   for (let attempt = 0; attempt <= mergedOptions.maxRetries; attempt++) {
     try {
       if (attempt > 0) {
-        logger.debug({ attempt, maxRetries: mergedOptions.maxRetries }, 'Retrying function call');
+        getLogger().debug('Retrying function call', { attempt, maxRetries: mergedOptions.maxRetries });
       }
-      
+
       return await fn();
     } catch (error) {
       lastError = error;
-      
+
       // Log the error
-      logger.warn({
+      getLogger().warn('Function call failed', {
         attempt: attempt + 1,
         maxRetries: mergedOptions.maxRetries + 1,
         error: error instanceof Error ? {
           name: error.name,
           message: error.message,
-          code: (error as any).code
+          code: (error as unknown as { code?: string }).code
         } : error
-      }, 'Function call failed');
+      });
       
       // Don't retry if we've reached max attempts
       if (attempt >= mergedOptions.maxRetries) {
@@ -151,23 +151,23 @@ export async function retryWithPlayFabLogic<T>(
       
       // Check if error is retryable
       if (!isRetryableError(error, mergedOptions)) {
-        logger.debug({ error }, 'Error is not retryable, giving up');
+        getLogger().debug('Error is not retryable, giving up', { error });
         break;
       }
-      
+
       // Calculate delay
-      const retryAfter = error instanceof RateLimitError 
-        ? (error.details as any)?.retryAfter 
+      const retryAfter = error instanceof RateLimitError
+        ? (error.details as { retryAfter?: number })?.retryAfter
         : undefined;
-      
+
       const delay = calculateRetryDelay(attempt, mergedOptions, retryAfter);
-      
-      logger.info({
+
+      getLogger().info('Retrying after delay', {
         attempt: attempt + 1,
         delay,
         retryAfter,
         nextAttemptIn: `${delay}ms`
-      }, 'Retrying after delay');
+      });
       
       // Wait before retrying
       await new Promise(resolve => setTimeout(resolve, delay));
@@ -175,15 +175,15 @@ export async function retryWithPlayFabLogic<T>(
   }
   
   // All retry attempts failed
-  logger.error({
+  getLogger().error('All retry attempts exhausted', {
     totalAttempts: mergedOptions.maxRetries + 1,
     lastError: lastError instanceof Error ? {
       name: lastError.name,
       message: lastError.message,
-      code: (lastError as any).code
+      code: (lastError as unknown as { code?: string }).code
     } : lastError
-  }, 'All retry attempts exhausted');
-  
+  });
+
   throw lastError;
 }
 
