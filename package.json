@@ -1,6 +1,6 @@
 {
   "name": "@akiojin/playfab-mcp-server",
-  "version": "0.3.3",
+  "version": "1.1.0",
   "description": "PlayFab MCP Server",
   "license": "MIT",
   "author": "akiojin",
@@ -12,12 +12,18 @@
   "scripts": {
     "build": "tsc && shx chmod +x dist/*.js",
     "clean": "shx rm -rf dist",
-    "prepare": "npm run build",
+    "prepare": "npm run build && husky",
     "watch": "tsc --watch",
     "start": "node dist/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "echo \"Lint not configured yet\"",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\"",
     "typecheck": "tsc --noEmit",
+    "generate-types": "ts-node --esm scripts/generate-tool-types.ts",
     "prebuild": "npm run clean",
     "prepublishOnly": "npm run build && npm run typecheck"
   },
@@ -32,6 +38,11 @@
   ],
   "engines": {
     "node": ">=18.0.0"
+  },
+  "overrides": {
+    "@eslint/plugin-kit": "0.3.4",
+    "brace-expansion": "2.0.2",
+    "body-parser": "2.2.1"
   },
   "publishConfig": {
     "access": "public",
@@ -53,16 +64,31 @@
   },
   "homepage": "https://github.com/akiojin/playfab-mcp-server#readme",
   "devDependencies": {
+    "@commitlint/cli": "^20.1.0",
+    "@commitlint/config-conventional": "^20.0.0",
+    "@eslint/js": "^9.28.0",
     "@types/dotenv": "^8.2.3",
-    "@types/node": "^20.17.32",
-    "shx": "^0.3.4",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^25.0.2",
+    "@types/pino-pretty": "^5.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.33.0",
+    "@typescript-eslint/parser": "^8.33.0",
+    "eslint": "^9.28.0",
+    "eslint-config-prettier": "^10.1.5",
+    "husky": "^9.1.7",
+    "jest": "^30.2.0",
+    "prettier": "^3.5.3",
+    "shx": "^0.4.0",
+    "ts-jest": "^29.3.4",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.10.2",
+    "@modelcontextprotocol/sdk": "^1.24.1",
     "@vercel/ncc": "^0.38.3",
-    "dotenv": "^16.5.0",
+    "dotenv": "^17.2.3",
+    "pino": "^10.1.0",
+    "pino-pretty": "^13.0.0",
     "playfab-sdk": "^2.172.250428"
   },
   "type": "module",

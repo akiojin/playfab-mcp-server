@@ -1,5 +1,4 @@
 # PlayFab MCP Server
-[![smithery badge](https://smithery.ai/badge/@akiojin/playfab-mcp-server)](https://smithery.ai/server/@akiojin/playfab-mcp-server)
 
 ## What Is This? 🤔
 
@@ -25,6 +24,7 @@ Follow these steps to get started:
 ### What Can It Do? 📊
 
 #### Catalog & Search
+
 - Search for items using PlayFab's search_items API.
 - **Catalog Management (Economy v2):**
   - Create new draft items with the create_draft_item API.
@@ -34,12 +34,14 @@ Follow these steps to get started:
   - Get detailed item information with the get_item API.
 
 #### Player Management
+
 - Retrieve comprehensive segment information.
 - Query player profiles within specified segments.
 - Convert a PlayFab ID to a Title Player Account ID via the get_title_player_account_id_from_playfab_id API.
 - Get detailed user account information with the get_user_account_info API.
 
 #### Inventory Management
+
 - **Get Operations:**
   - Retrieve current inventory items with the get_inventory_items API.
   - Fetch inventory collection IDs using the get_inventory_collection_ids API.
@@ -51,33 +53,28 @@ Follow these steps to get started:
   - Update item properties with the update_inventory_items API.
 
 #### Economy v2 Administration
+
 - Execute batch inventory operations with the execute_inventory_operations API.
 - Note: In Economy v2, virtual currencies are managed as inventory items.
 
 #### User Account Administration
+
 - Ban players by ID, IP, or MAC address with the ban_users API.
 - Unban players completely with the revoke_all_bans_for_user API.
 
 #### Player Data Management
+
 - Retrieve player custom data with the get_user_data API.
 - Update player custom data with the update_user_data API.
 
 #### Title Configuration Management
+
 - Set global title data with the set_title_data API.
 - Retrieve title data with the get_title_data API.
 - Set server-only internal data with the set_title_internal_data API.
 - Retrieve internal data with the get_title_internal_data API.
 
-
 ## Quick Start 🚀
-
-### Installing via Smithery
-
-To install PlayFab MCP Server for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@akiojin/playfab-mcp-server):
-
-```bash
-npx -y @smithery/cli install @akiojin/playfab-mcp-server --client claude
-```
 
 ### Prerequisites
 
@@ -89,14 +86,15 @@ npx -y @smithery/cli install @akiojin/playfab-mcp-server --client claude
 
 Obtain your PlayFab Title ID and Developer Secret Key from the PlayFab Game Manager, then create a `.env` file in the project root with the following content (replace the placeholders with your actual credentials):
 
-```env
+```bash
 PLAYFAB_TITLE_ID=
 PLAYFAB_DEV_SECRET_KEY=
 ```
 
-### Getting Started
+### Installation and Setup
 
 1. **Install Dependencies**
+
    In the project root, run the following command to install all necessary dependencies:
 
    ```bash
@@ -104,6 +102,7 @@ PLAYFAB_DEV_SECRET_KEY=
    ```
 
 2. **Build the Project**
+
    Compile the project by executing:
 
    ```bash
@@ -111,6 +110,7 @@ PLAYFAB_DEV_SECRET_KEY=
    ```
 
 3. **Start the Server**
+
    Start the server by executing:
 
    ```bash
@@ -118,11 +118,93 @@ PLAYFAB_DEV_SECRET_KEY=
    ```
 
 4. **Confirmation Message**
+
    Upon startup, you should see this message:
 
    ```text
    PlayFab Server running on stdio
    ```
+
+### Development Setup
+
+#### Code Quality Tools
+
+- **ESLint**: Configured for TypeScript with recommended rules for code consistency
+- **Prettier**: Automatic code formatting with project-specific settings
+- **TypeScript**: Strict mode enabled for enhanced type safety
+- **Jest**: Testing framework configured for TypeScript
+
+#### Available Scripts
+
+```bash
+# Build the project
+npm run build
+
+# Development mode with file watching
+npm run watch
+
+# TypeScript type checking
+npm run typecheck
+
+# Run ESLint
+npm run lint
+
+# Run ESLint and fix issues
+npm run lint:fix
+
+# Format code with Prettier
+npm run format
+
+# Check code formatting
+npm run format:check
+
+# Run tests
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run tests with coverage
+npm run test:coverage
+```
+
+#### TypeScript Configuration
+
+This project uses TypeScript with strict mode enabled, ensuring:
+- Strict null checks
+- No implicit any types
+- Strict function types
+- Always strict mode
+
+#### Testing
+
+Tests are written using Jest and can be found in `__tests__` directories or files with `.test.ts` extension. Run tests before committing changes to ensure code quality.
+
+### Spec-Driven Development (Spec Kit, JP)
+
+- Install CLI: `uv tool install specify-cli --from git+https://github.com/akiojin/spec-kit.git`
+- Create spec/plan/tasks: `./.specify/scripts/bash/create-new-feature.sh "feature summary"`（デフォルトはブランチを作成しない。必要なら `--branch`）
+- Assets: `.specify/templates/*`, `.specify/scripts/bash/*`, specs under `specs/`
+- Claude/Codex slash commands: `/speckit.constitution`, `/speckit.specify`, `/speckit.plan`, `/speckit.tasks`, `/speckit.implement`
+
+### Docker Development Environment
+
+The repository ships with a lightweight dev container (Node 22, tooling, GitHub CLI).
+
+```bash
+# Build image
+docker compose build
+
+# Open a shell inside the container
+docker compose run --rm playfab-mcp-server bash
+
+# Inside the container
+npm ci
+npm run build
+npm start
+```
+
+Volumes keep your workspace (`.`), Codex/Claude configs, and shell history. Set `PLAYFAB_TITLE_ID` / `PLAYFAB_DEV_SECRET_KEY` in the container env when running the server.
 
 ### Running with Cursor
 
@@ -157,3 +239,147 @@ Open Claude Desktop and navigate to File → Settings → Developer → Edit Con
 ```
 
 With these steps, you have successfully configured the PlayFab MCP server for use with your LLM client, allowing seamless interaction with PlayFab's services.
+
+## Spec-Driven Development with Spec Kit
+
+This repository follows the Spec Kit SDD/TDD workflow used in `akiojin/gwt`.
+
+- Requirements: Python 3.11+ and `uv`
+- Install CLI: `uv tool install specify-cli --from git+https://github.com/akiojin/spec-kit.git`
+- Assets: templates under `.specify/templates`, scripts under `.specify/scripts/bash`, specs live in `specs/`
+- Create a new spec/plan: `./.specify/scripts/bash/create-new-feature.sh "feature summary"` (add `--branch` if you also want a branch)
+- Generated files include `spec.md`, `plan.md`, `tasks.md`; keep them reviewed/committed alongside code
+- Claude/Codex slash commands (if available): `/speckit.constitution`, `/speckit.specify`, `/speckit.plan`, `/speckit.tasks`, `/speckit.implement`
+
+## Contributing
+
+### Commit Message Convention
+
+This project follows [Conventional Commits](https://www.conventionalcommits.org/) for automated versioning and release.
+
+#### Commit Message Format
+
+```text
+<type>(<scope>): <subject>
+
+<body>
+
+<footer>
+```
+
+#### Types
+
+- **feat**: A new feature (triggers MINOR version bump)
+- **fix**: A bug fix (triggers PATCH version bump)
+- **docs**: Documentation only changes
+- **style**: Changes that do not affect the meaning of the code
+- **refactor**: A code change that neither fixes a bug nor adds a feature
+- **perf**: A code change that improves performance
+- **test**: Adding missing tests or correcting existing tests
+- **chore**: Changes to the build process or auxiliary tools
+
+#### Version Bumping Rules
+
+- **MAJOR** version: When commit message contains `BREAKING CHANGE` in footer or `!` after type/scope
+  - Example: `feat!: remove deprecated API endpoints`
+  - Example: `feat: new API\n\nBREAKING CHANGE: removed old endpoints`
+- **MINOR** version: When commit type is `feat`
+  - Example: `feat: add new PlayFab API integration`
+- **PATCH** version: When commit type is `fix`
+  - Example: `fix: correct error handling in API calls`
+
+### Release Process (develop → main, release-please)
+
+1. **Prepare release PR**: Run the `prepare-release.yml` workflow to open a PR from `develop` to `main`  
+   - Actions UI: `Prepare Release` → run with ref `develop`  
+   - CLI: `gh workflow run prepare-release.yml --ref develop`  
+   - If a PR from `develop` already exists, it will be reused; PRs opened from `develop` can be auto-merged by the workflow.
+2. **Release automation**: When `main` is updated, `release.yml` runs release-please (manifest) to bump versions, update `CHANGELOG.md`, and create the GitHub Release/tag.
+3. **Publish**: Tag push `v*` triggers `publish.yml` to run tests, build, typecheck, and `npm publish --access public`.
+
+Required secrets:
+- `PERSONAL_ACCESS_TOKEN` (optional; used by `prepare-release`/`release` when provided, falls back to `GITHUB_TOKEN`)
+- `NPM_TOKEN` (for `publish.yml`)
+
+Branch protection: keep protections on `main`; release PRs should satisfy required checks before merge.
+
+### Scripts Reference
+
+| Script | Description |
+|--------|-------------|
+| `npm start` | Start the MCP server |
+| `npm run build` | Build TypeScript to JavaScript |
+| `npm run watch` | Build in watch mode for development |
+| `npm run typecheck` | Run TypeScript type checking |
+| `npm run lint` | Run ESLint checks |
+| `npm run lint:fix` | Fix ESLint issues automatically |
+| `npm run format` | Format code with Prettier |
+| `npm run format:check` | Check code formatting |
+| `npm test` | Run all tests |
+| `npm run test:watch` | Run tests in watch mode |
+| `npm run test:coverage` | Generate test coverage report |
+
+## Security
+
+We take security seriously. If you discover a security vulnerability within this project, please follow these steps:
+
+### Reporting Security Vulnerabilities
+
+1. **DO NOT** create a public GitHub issue for security vulnerabilities
+2. Instead, please report security issues via GitHub's private vulnerability reporting:
+   - Go to the **Security** tab of this repository
+   - Click on **Report a vulnerability**
+   - Provide detailed information about the vulnerability
+
+### What We Need From You
+
+- A description of the vulnerability
+- Steps to reproduce the issue
+- Potential impact
+- Any suggested fixes (optional)
+
+### Our Commitment
+
+- We will acknowledge receipt of your report within 48 hours
+- We will provide regular updates on our progress
+- We will credit you for the discovery (unless you prefer to remain anonymous)
+
+### Security Best Practices
+
+When using this server:
+
+1. **Never commit credentials**: Always use environment variables for sensitive data
+2. **Keep dependencies updated**: Regularly run `npm audit` and update packages
+3. **Use least privilege**: Only grant the minimum required permissions
+4. **Rotate keys regularly**: Change your PlayFab Developer Secret Keys periodically
+
+## Support
+
+### Getting Help
+
+If you encounter any issues or have questions about using the PlayFab MCP Server, here are the best ways to get support:
+
+1. **GitHub Issues**: For bug reports and feature requests, please [create an issue](https://github.com/akiojin/playfab-mcp-server/issues)
+2. **Discussions**: For general questions and community support, use [GitHub Discussions](https://github.com/akiojin/playfab-mcp-server/discussions)
+3. **Documentation**: Check the README and code comments for usage examples
+
+### Before Creating an Issue
+
+Please check if your issue has already been reported by searching existing issues. If you find a similar issue, you can add additional information as a comment.
+
+### What We Support
+
+- Installation and setup questions
+- Bug reports with reproducible steps
+- Feature requests and suggestions
+- Documentation improvements
+
+### What We Don't Support
+
+- General PlayFab API questions (please refer to [PlayFab Documentation](https://docs.microsoft.com/gaming/playfab/))
+- Issues with third-party tools or services
+- Custom implementation requests
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

@@ -1,3 +1,8 @@
+# Local tool configs
+.claude/settings.local.json
+.serena/
+.docker/bash_history
+
 # Logs
 logs
 *.log
@@ -134,3 +139,4 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+.worktrees/
