@@ -6,7 +6,7 @@ import * as pf from 'playfab-sdk'
 import { validateEnvironment } from '../utils/env-validator'
 
 // Load environment variables
-dotenv.config()
+dotenv.config({ quiet: true })
 
 // Validate required environment variables
 const env = validateEnvironment()

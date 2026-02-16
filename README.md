@@ -74,21 +74,72 @@ Follow these steps to get started:
 - Set server-only internal data with the set_title_internal_data API.
 - Retrieve internal data with the get_title_internal_data API.
 
+#### News Management
+
+- Create localized news items with the add_localized_news API.
+- Retrieve current news with the get_title_news API.
+
+#### Analytics (KQL / Data Explorer)
+
+- Run KQL queries against PlayFab Insights / Azure Data Explorer with the query_analytics API.
+- Query player events, telemetry, PlayStream events, and custom events sent from game clients.
+- Supports full KQL syntax including `where`, `summarize`, `project`, `join`, `render`, etc.
+- Requires Azure AD credentials (see [Environment Variables](#environment-variables) below).
+
 ## Quick Start 🚀
+
+### One-Line Setup (Windows)
+
+Run this in PowerShell to interactively configure the MCP server for your AI client(s) — no need to clone the repo:
+
+```powershell
+irm https://raw.githubusercontent.com/inXile-Entertainment/playfab-mcp-server/main/setup-playfab-mcp.ps1 | iex
+```
+
+The script will:
+
+1. Check that Node.js 18+ is installed
+2. Prompt for your PlayFab credentials (and optionally Azure AD for analytics)
+3. Let you pick which AI clients to configure (Claude Desktop, Claude Code, VS Code, Cursor)
+4. Write the correct config files, merging with any existing MCP servers
+
+If you prefer manual setup, follow the steps below.
 
 ### Prerequisites
 
 - Node.js 18 or higher.
 - A valid PlayFab account (obtain your Title ID and Developer Secret Key via PlayFab Game Manager).
-- A supported LLM client such as Claude Desktop.
+- A supported LLM client such as Claude Desktop, Claude Code (CLI), Cursor, or VS Code.
+
+### Environment Variables
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `PLAYFAB_TITLE_ID` | Yes | Your PlayFab Title ID (5 hex characters, e.g. `F85D2`). Found in PlayFab Game Manager. |
+| `PLAYFAB_DEV_SECRET_KEY` | Yes | Developer Secret Key from PlayFab Game Manager > Settings > Secret Keys. |
+| `AZURE_TENANT_ID` | For analytics | Azure AD Tenant ID. Required for KQL/Insights queries. |
+| `AZURE_CLIENT_ID` | For analytics | Azure AD Application (client) ID. Required for KQL/Insights queries. |
+| `AZURE_CLIENT_SECRET` | For analytics | Azure AD Client Secret. Required for KQL/Insights queries. |
+| `AZURE_ADX_CLUSTER_URL` | Optional | Custom ADX cluster URL. Defaults to `https://insights.playfab.com`. |
+| `AZURE_ADX_DATABASE` | Optional | Custom ADX database name. Defaults to your Title ID. |
+
+The first two variables are needed for all PlayFab operations. The Azure AD variables are only needed if you want to run KQL analytics queries against PlayFab Insights.
+
+> **Where to get Azure AD credentials:** Create an App Registration in Azure Portal, grant it access to your PlayFab Insights cluster, then use the Tenant ID, Application ID, and a Client Secret. See [Connecting to Insights with Kusto](https://learn.microsoft.com/en-us/gaming/playfab/data-analytics/legacy/connectivity/connecting-kusto-csharp-to-insights) for details.
 
 ### Set Up Your Project
 
-Obtain your PlayFab Title ID and Developer Secret Key from the PlayFab Game Manager, then create a `.env` file in the project root with the following content (replace the placeholders with your actual credentials):
+Create a `.env` file in the project root with your credentials:
 
 ```bash
-PLAYFAB_TITLE_ID=
-PLAYFAB_DEV_SECRET_KEY=
+# Required
+PLAYFAB_TITLE_ID=YOUR_TITLE_ID
+PLAYFAB_DEV_SECRET_KEY=YOUR_SECRET_KEY
+
+# Optional (for analytics / KQL queries)
+AZURE_TENANT_ID=YOUR_TENANT_ID
+AZURE_CLIENT_ID=YOUR_CLIENT_ID
+AZURE_CLIENT_SECRET=YOUR_CLIENT_SECRET
 ```
 
 ### Installation and Setup
@@ -216,9 +267,9 @@ To use the PlayFab MCP server with Cursor, follow these steps:
 4. Launch Cursor; the PlayFab MCP Server should appear in the tools list.
 5. For example, try a prompt like "Show me the latest 10 items" to verify that the server processes your query correctly.
 
-### Adding Your Project Details to Claude Desktop's Config File
+### Running with Claude Desktop
 
-Open Claude Desktop and navigate to File → Settings → Developer → Edit Config. Then, replace the `claude_desktop_config` file content with the following snippet:
+Open Claude Desktop and navigate to **File > Settings > Developer > Edit Config**. Then add the following to your `claude_desktop_config.json`:
 
 ```json
 {
@@ -231,14 +282,73 @@ Open Claude Desktop and navigate to File → Settings → Developer → Edit Con
       ],
       "env": {
         "PLAYFAB_TITLE_ID": "Your PlayFab Title ID",
-        "PLAYFAB_DEV_SECRET_KEY": "Your PlayFab Developer Secret Key"
+        "PLAYFAB_DEV_SECRET_KEY": "Your PlayFab Developer Secret Key",
+        "AZURE_TENANT_ID": "Your Azure Tenant ID (optional, for analytics)",
+        "AZURE_CLIENT_ID": "Your Azure Client ID (optional, for analytics)",
+        "AZURE_CLIENT_SECRET": "Your Azure Client Secret (optional, for analytics)"
       }
     }
   }
 }
 ```
 
-With these steps, you have successfully configured the PlayFab MCP server for use with your LLM client, allowing seamless interaction with PlayFab's services.
+Remove the `AZURE_*` lines if you don't need analytics/KQL query support.
+
+### Running with Claude Code (CLI)
+
+Add the server to your project's `.mcp.json` or your global Claude Code settings:
+
+```json
+{
+  "mcpServers": {
+    "playfab": {
+      "command": "npx",
+      "args": ["-y", "@akiojin/playfab-mcp-server"],
+      "env": {
+        "PLAYFAB_TITLE_ID": "Your PlayFab Title ID",
+        "PLAYFAB_DEV_SECRET_KEY": "Your PlayFab Developer Secret Key",
+        "AZURE_TENANT_ID": "Your Azure Tenant ID (optional)",
+        "AZURE_CLIENT_ID": "Your Azure Client ID (optional)",
+        "AZURE_CLIENT_SECRET": "Your Azure Client Secret (optional)"
+      }
+    }
+  }
+}
+```
+
+### Running with VS Code
+
+Create `.vscode/mcp.json` in your project root:
+
+```json
+{
+  "servers": {
+    "PlayFab": {
+      "command": "npx",
+      "args": ["-y", "@akiojin/playfab-mcp-server"],
+      "env": {
+        "PLAYFAB_TITLE_ID": "Your PlayFab Title ID",
+        "PLAYFAB_DEV_SECRET_KEY": "Your PlayFab Developer Secret Key",
+        "AZURE_TENANT_ID": "Your Azure Tenant ID (optional)",
+        "AZURE_CLIENT_ID": "Your Azure Client ID (optional)",
+        "AZURE_CLIENT_SECRET": "Your Azure Client Secret (optional)"
+      }
+    }
+  }
+}
+```
+
+### Verify It Works
+
+Once configured, try these prompts in your AI client to confirm everything is connected:
+
+| Prompt | Tests |
+|--------|-------|
+| `"Show me the latest 10 items"` | Basic PlayFab connectivity (catalog search) |
+| `"Get all player segments"` | Player/segment API access |
+| `['ingested-data'] \| take 10` | Analytics/KQL connectivity (requires Azure AD setup) |
+
+If you get results back, you're good to go.
 
 ## Spec-Driven Development with Spec Kit
 

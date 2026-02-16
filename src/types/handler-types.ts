@@ -523,3 +523,15 @@ export interface GrantItemsToUsersResult {
     }>;
   }>;
 }
+// Analytics API Types
+export interface QueryAnalyticsParams extends HandlerParams {
+  Query: string;
+  Timespan?: string;
+}
+
+export interface QueryAnalyticsResult {
+  success: boolean;
+  columns: string[];
+  rows: unknown[][];
+  rowCount: number;
+}

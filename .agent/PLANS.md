@@ -147,6 +147,15 @@
 
 ### 🔧 現在作業中
 
+- [x] **Analytics (KQL/Kusto) ツールの追加**（2026/02/13）
+  - [x] query_analytics ツール定義作成（src/tools/analytics/query-analytics.ts）
+  - [x] query_analytics ハンドラー実装（src/handlers/analytics/query-analytics.ts）
+  - [x] 型定義追加（QueryAnalyticsParams, QueryAnalyticsResult in handler-types.ts）
+  - [x] server.ts にルーター登録・ツール一覧登録
+  - [x] ビルド成功確認（npm run build）
+  - [ ] Claude Desktop での動作確認
+  - [ ] ヒートマップ可視化ツールの追加（将来）
+
 - [x] **mainブランチの最新取り込み**（2025/12/02）
 - [x] **リリースフロー移植（gwt方式）**（release-please、prepare/release/publishワークフロー適用、smithery削除）
 - [x] **Spec Kit導入とドキュメント反映**

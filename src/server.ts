@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+﻿#!/usr/bin/env node
 import { Server } from "@modelcontextprotocol/sdk/server/index.js"
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import {
@@ -16,10 +16,14 @@ const PlayFabEconomyAPI = pf.PlayFabEconomy as PlayFabEconomyModule.IPlayFabEcon
 const PlayFabProfileAPI = pf.PlayFabProfiles as PlayFabProfilesModule.IPlayFabProfiles
 const PlayFabServerAPI = pf.PlayFabServer as PlayFabServerModule.IPlayFabServer
 
-dotenv.config()
+dotenv.config({ quiet: true })
 
 PlayFab.settings.titleId = process.env['PLAYFAB_TITLE_ID']!
 PlayFab.settings.developerSecretKey = process.env['PLAYFAB_DEV_SECRET_KEY']!
+
+import { setupDependencies } from "./config/di-setup.js";
+setupDependencies();
+
 import * as catalogTools from "./tools/catalog/index.js";
 import * as inventoryTools from "./tools/inventory/index.js";
 import * as playerTools from "./tools/player/index.js";
@@ -28,6 +32,8 @@ import * as catalogHandlers from "./handlers/catalog/index.js";
 import * as inventoryHandlers from "./handlers/inventory/index.js";
 import * as playerHandlers from "./handlers/player/index.js";
 import * as titleHandlers from "./handlers/title/index.js";
+import * as analyticsTools from "./tools/analytics/index.js";
+import * as analyticsHandlers from "./handlers/analytics/index.js";
 import { createLogger, logToolCall, PerformanceLogger } from "./utils/logger.js";
 import { router } from "./utils/router.js";
 
@@ -73,6 +79,9 @@ router.registerBatch({
   'set_title_internal_data': titleHandlers.SetTitleInternalData as any,
   'get_title_news': titleHandlers.GetTitleNews as any,
   'add_localized_news': titleHandlers.AddLocalizedNews as any,
+  
+  // Analytics handlers
+  'query_analytics': analyticsHandlers.QueryAnalytics as any,
 });
 
 export const server = new Server(
@@ -119,7 +128,8 @@ server.setRequestHandler(ListToolsRequestSchema, async () => ({
     titleTools.SET_TITLE_INTERNAL_DATA_TOOL,
     titleTools.GET_TITLE_INTERNAL_DATA_TOOL,
     titleTools.ADD_LOCALIZED_NEWS_TOOL,
-    titleTools.GET_TITLE_NEWS_TOOL
+    titleTools.GET_TITLE_NEWS_TOOL,
+    analyticsTools.QUERY_ANALYTICS_TOOL,
   ],
 }))
 

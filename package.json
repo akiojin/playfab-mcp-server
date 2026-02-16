@@ -91,6 +91,5 @@
     "pino-pretty": "^13.0.0",
     "playfab-sdk": "^2.172.250428"
   },
-  "type": "module",
   "private": false
 }

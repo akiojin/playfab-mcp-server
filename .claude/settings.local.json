@@ -44,7 +44,19 @@
       "Bash(/Users/akio-jinsenji/.nodebrew/node/v20.9.0/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg \"SetTitleData\" node_modules/playfab-sdk/Scripts/typings/PlayFab/PlayFabAdmin.d.ts -A 2 -B 2)",
       "Bash(/Users/akio-jinsenji/.nodebrew/node/v20.9.0/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg \"interface SetTitleDataRequest\" node_modules/playfab-sdk/Scripts/typings/PlayFab/PlayFabAdmin.d.ts -A 10)",
       "Bash(/Users/akio-jinsenji/.nodebrew/node/v20.9.0/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg \"interface SetTitleDataAndOverridesRequest\" node_modules/playfab-sdk/Scripts/typings/PlayFab/PlayFabAdmin.d.ts -A 10)",
-      "Bash(/Users/akio-jinsenji/.nodebrew/node/v20.9.0/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg \"interface TitleDataKeyValue\" node_modules/playfab-sdk/Scripts/typings/PlayFab/PlayFabAdmin.d.ts -A 5)"
+      "Bash(/Users/akio-jinsenji/.nodebrew/node/v20.9.0/lib/node_modules/@anthropic-ai/claude-code/vendor/ripgrep/arm64-darwin/rg \"interface TitleDataKeyValue\" node_modules/playfab-sdk/Scripts/typings/PlayFab/PlayFabAdmin.d.ts -A 5)",
+      "Bash(powershell:*)",
+      "Bash(npx:*)",
+      "Bash(git -C \"D:/Projects/Github/playfab-mcp-server\" show HEAD:package.json)",
+      "Bash(git -C \"D:/Projects/Github/playfab-mcp-server\" show HEAD:tsconfig.json)",
+      "Bash(git -C \"D:/Projects/Github/playfab-mcp-server\" diff HEAD -- package.json)",
+      "mcp__playfab__query_analytics",
+      "WebFetch(domain:community.playfab.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:blog.structed.me)",
+      "Bash(del \"D:\\\\Projects\\\\Github\\\\playfab-mcp-server\\\\test-kusto.mjs\")",
+      "Bash(del \"D:\\\\Projects\\\\Github\\\\playfab-mcp-server\\\\_validate.ps1\")",
+      "Bash(git checkout:*)"
     ]
   },
   "enableAllProjectMcpServers": false
