@@ -147,6 +147,19 @@
 
 ### 🔧 現在作業中
 
+- [x] **playfab-cli スキル整備 — MCP Server 非推奨化に向けて**（2026/03/16）
+  - [x] 既存12スキルをフラット .md からディレクトリ形式 (skills/foo/SKILL.md) に変換
+  - [x] YAML frontmatter (name, description, allowed-tools, metadata) を全スキルに追加
+  - [x] Use When / Do Not Use When / Notes セクションを全スキルに追加
+  - [x] Admin API スキル新規作成 (84ツール)
+  - [x] Server API スキル新規作成 (113ツール)
+  - [x] Experimentation API スキル新規作成 (13ツール)
+  - [x] plugin.json を v0.2.0 に更新し 15スキルを登録
+  - [x] .claude/skills/ と .codex/skills/ を正本と同期 (各15スキル)
+  - [x] CLAUDE.md にスキルアーキテクチャセクションと運用ワークフローを追記 (unity-cli参考)
+  - [x] 全413ツールの100%カバレッジ達成
+  - [x] コミット＆プッシュ (playfab-cli main: e36dd6b)
+
 - [x] **mainブランチの最新取り込み**（2025/12/02）
 - [x] **リリースフロー移植（gwt方式）**（release-please、prepare/release/publishワークフロー適用、smithery削除）
 - [x] **Spec Kit導入とドキュメント反映**
